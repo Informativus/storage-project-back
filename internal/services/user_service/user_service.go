@@ -3,10 +3,10 @@ package user_service
 import (
 	"errors"
 
+	"github.com/ivan/storage-project-back/internal/services/file_service"
+	"github.com/ivan/storage-project-back/pkg/config"
+	"github.com/ivan/storage-project-back/pkg/jwt_service"
 	"github.com/rs/zerolog/log"
-	"gitlab.com/ivan/storage-project-back/internal/services/file_service"
-	"gitlab.com/ivan/storage-project-back/pkg/config"
-	"gitlab.com/ivan/storage-project-back/pkg/jwt_service"
 )
 
 type UserService struct {

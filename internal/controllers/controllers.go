@@ -2,10 +2,10 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	"gitlab.com/ivan/storage-project-back/internal/controllers/file_controller"
-	"gitlab.com/ivan/storage-project-back/internal/controllers/user_controller"
-	"gitlab.com/ivan/storage-project-back/internal/services"
-	"gitlab.com/ivan/storage-project-back/pkg/errsvc"
+	"github.com/ivan/storage-project-back/internal/controllers/file_controller"
+	"github.com/ivan/storage-project-back/internal/controllers/user_controller"
+	"github.com/ivan/storage-project-back/internal/services"
+	"github.com/ivan/storage-project-back/pkg/errsvc"
 )
 
 type Controllers struct {

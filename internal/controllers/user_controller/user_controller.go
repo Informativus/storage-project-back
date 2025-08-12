@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gitlab.com/ivan/storage-project-back/internal/services"
-	"gitlab.com/ivan/storage-project-back/internal/services/user_service"
-	"gitlab.com/ivan/storage-project-back/pkg/errsvc"
+	"github.com/ivan/storage-project-back/internal/services"
+	"github.com/ivan/storage-project-back/internal/services/user_service"
+	"github.com/ivan/storage-project-back/pkg/errsvc"
 )
 
 type UserController struct {

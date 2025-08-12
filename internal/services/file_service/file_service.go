@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/ivan/storage-project-back/pkg/config"
 	"github.com/rs/zerolog/log"
-	"gitlab.com/ivan/storage-project-back/pkg/config"
 )
 
 type FileService struct {

@@ -1,10 +1,10 @@
 package services
 
 import (
-	fileservice "gitlab.com/ivan/storage-project-back/internal/services/file_service"
-	userservice "gitlab.com/ivan/storage-project-back/internal/services/user_service"
-	"gitlab.com/ivan/storage-project-back/pkg/config"
-	"gitlab.com/ivan/storage-project-back/pkg/jwt_service"
+	fileservice "github.com/ivan/storage-project-back/internal/services/file_service"
+	userservice "github.com/ivan/storage-project-back/internal/services/user_service"
+	"github.com/ivan/storage-project-back/pkg/config"
+	"github.com/ivan/storage-project-back/pkg/jwt_service"
 )
 
 type Services struct {

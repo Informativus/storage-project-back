@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"gitlab.com/ivan/storage-project-back/pkg/config"
+    "github.com/ivan/storage-project-back/pkg/config"
 )
 
 type JwtPayload struct {

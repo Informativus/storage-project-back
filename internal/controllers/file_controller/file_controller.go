@@ -4,10 +4,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ivan/storage-project-back/internal/services"
+	"github.com/ivan/storage-project-back/internal/services/file_service"
+	"github.com/ivan/storage-project-back/pkg/errsvc"
 	"github.com/rs/zerolog/log"
-	"gitlab.com/ivan/storage-project-back/internal/services"
-	"gitlab.com/ivan/storage-project-back/internal/services/file_service"
-	"gitlab.com/ivan/storage-project-back/pkg/errsvc"
 )
 
 type FileController struct {
