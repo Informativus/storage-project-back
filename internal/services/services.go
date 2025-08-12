@@ -8,14 +8,15 @@ import (
 )
 
 type Services struct {
-	FileService *fileservice.FileService
 	UserService *userservice.UserService
-	JwtService  *jwt_service.JwtService
+	FileService *fileservice.FileService
 }
 
 func NewServices(cfg *config.Config, jwt *jwt_service.JwtService) *Services {
+	filesrvc := fileservice.NewFileService(cfg)
+
 	return &Services{
-		FileService: fileservice.NewFileService(cfg),
-		UserService: userservice.NewUserService(cfg, jwt),
+		FileService: filesrvc,
+		UserService: userservice.NewUserService(cfg, jwt, filesrvc),
 	}
 }

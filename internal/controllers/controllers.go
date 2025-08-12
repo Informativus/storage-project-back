@@ -31,6 +31,7 @@ func (c *Controllers) RegisterRoutes(router *gin.Engine) {
 		user := api.Group("/user")
 		{
 			user.GET("/token", c.UserController.GenerateTokenForUser)
+			user.POST("/create", c.UserController.CreateUser)
 		}
 	}
 }
