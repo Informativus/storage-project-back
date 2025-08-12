@@ -1,4 +1,4 @@
-module gitlab.com/ivan/storage-project-back
+module github.com/ivan/storage-project-back
 
 go 1.24.0
 

@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"gitlab.com/ivan/storage-project-back/pkg/config"
+    "github.com/ivan/storage-project-back/pkg/config"
 )
 
 func main() {

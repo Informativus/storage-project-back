@@ -6,9 +6,11 @@ import (
 )
 
 var (
-	ErrInvalidFolder   = errors.New("invalid_folder")
-	ErrTokenSignFailed = errors.New("token_sign_failed")
-	ErrGenFolderFailed = errors.New("gen_folder_failed")
+	ErrInvalidFolder     = errors.New("invalid_folder")
+	ErrInvalidFolderName = errors.New("invalid_folder_name")
+	ErrFolderExist       = errors.New("folder_exist")
+	ErrTokenSignFailed   = errors.New("token_sign_failed")
+	ErrGenFolderFailed   = errors.New("gen_folder_failed")
 )
 
 type HttpError struct {
@@ -26,7 +28,17 @@ func (e *ErrorService) MapError(err error) HttpError {
 	switch err {
 	case ErrInvalidFolder:
 		return HttpError{
+			Message: "Invalid folder",
+			Code:    http.StatusBadRequest,
+		}
+	case ErrInvalidFolderName:
+		return HttpError{
 			Message: "Folder name is not valid",
+			Code:    http.StatusBadRequest,
+		}
+	case ErrFolderExist:
+		return HttpError{
+			Message: "Folder for this user alrady exist",
 			Code:    http.StatusBadRequest,
 		}
 	case ErrTokenSignFailed:

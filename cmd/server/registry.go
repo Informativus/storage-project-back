@@ -1,11 +1,11 @@
 package main
 
 import (
-	"gitlab.com/ivan/storage-project-back/internal/controllers"
-	"gitlab.com/ivan/storage-project-back/internal/services"
-	"gitlab.com/ivan/storage-project-back/pkg/config"
-	"gitlab.com/ivan/storage-project-back/pkg/errsvc"
-	"gitlab.com/ivan/storage-project-back/pkg/jwt_service"
+	"github.com/ivan/storage-project-back/internal/controllers"
+	"github.com/ivan/storage-project-back/internal/services"
+	"github.com/ivan/storage-project-back/pkg/config"
+	"github.com/ivan/storage-project-back/pkg/errsvc"
+	"github.com/ivan/storage-project-back/pkg/jwt_service"
 )
 
 type Registry struct {
