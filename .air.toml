@@ -1,0 +1,30 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+cmd = "go build -o tmp/server ./cmd/server"
+bin = "tmp/server"
+full_bin = ""
+
+[log]
+time = true
+
+[color]
+main = "yellow"
+watcher = "cyan"
+build = "green"
+runner = "magenta"
+
+[watch]
+ext = ["go", "env", "tmpl", "tpl"]
+
+# Папки, которые нужно игнорировать
+ignore = ["uploads"]
+
+# Папки и файлы, за которыми следить
+include = [
+  "cmd",
+  "internal",
+  "pkg",
+  ".env",
+]
