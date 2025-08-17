@@ -25,7 +25,7 @@ func NewUserController(services *services.Services, err *errsvc.ErrorService) *U
 func (uc *UserController) CreateUser(c *gin.Context) {
 	dto := c.MustGet("userDTO").(user_dto.CreateUserDto)
 
-	token, err := uc.UserService.CreateUser(dto.FldName)
+	token, err := uc.UserService.CreateUser(dto.FldName, dto.ConnUserToFld)
 
 	if err != nil {
 		httpErr := uc.ErrorService.MapError(err)

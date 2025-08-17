@@ -5,6 +5,7 @@ import "context"
 type DBClient interface {
 	QueryRow(ctx context.Context, sql string, args ...any) Row
 	Exec(ctx context.Context, query string, args ...any) (CommandTag, error)
+	IsErrNoRows(err error) bool
 }
 
 type CommandTag interface {

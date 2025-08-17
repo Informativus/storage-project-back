@@ -1,16 +1,19 @@
 package repository
 
 import (
-	user_repo "github.com/ivan/storage-project-back/internal/repository/user"
+	"github.com/ivan/storage-project-back/internal/repository/folder_repo"
+	user_repo "github.com/ivan/storage-project-back/internal/repository/user_repo"
 	"github.com/ivan/storage-project-back/pkg/database/database"
 )
 
 type Repositories struct {
 	UserRepo *user_repo.UserRepo
+	FldRepo  *folder_repo.FldRepo
 }
 
-func NewRepositories(conn database.DBClient) *Repositories {
+func NewRepositories(db database.DBClient) *Repositories {
 	return &Repositories{
-		UserRepo: user_repo.NewUserRepo(conn),
+		UserRepo: user_repo.NewUserRepo(db),
+		FldRepo:  folder_repo.NewFldRepo(db),
 	}
 }

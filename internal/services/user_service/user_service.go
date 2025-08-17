@@ -3,8 +3,8 @@ package user_service
 import (
 	"github.com/google/uuid"
 	"github.com/ivan/storage-project-back/internal/models/user_model"
-	user_repo "github.com/ivan/storage-project-back/internal/repository/user"
-	"github.com/ivan/storage-project-back/internal/services/file_service"
+	"github.com/ivan/storage-project-back/internal/repository/user_repo"
+	"github.com/ivan/storage-project-back/internal/services/folder_service"
 	"github.com/ivan/storage-project-back/pkg/config"
 	"github.com/ivan/storage-project-back/pkg/errsvc"
 	"github.com/ivan/storage-project-back/pkg/jwt_service"
@@ -12,23 +12,23 @@ import (
 )
 
 type UserService struct {
-	cfg         *config.Config
-	jwt         *jwt_service.JwtService
-	UserRepo    *user_repo.UserRepo
-	FileService *file_service.FileService
+	cfg           *config.Config
+	jwt           *jwt_service.JwtService
+	UserRepo      *user_repo.UserRepo
+	FolderService *folder_service.FolderService
 }
 
 func NewUserService(
 	cfg *config.Config,
 	jwt *jwt_service.JwtService,
 	userRepo *user_repo.UserRepo,
-	fileSrvc *file_service.FileService,
+	fldService *folder_service.FolderService,
 ) *UserService {
 	return &UserService{
-		cfg:         cfg,
-		jwt:         jwt,
-		UserRepo:    userRepo,
-		FileService: fileSrvc,
+		cfg:           cfg,
+		jwt:           jwt,
+		UserRepo:      userRepo,
+		FolderService: fldService,
 	}
 }
 
@@ -43,8 +43,8 @@ func (u *UserService) GenerateToken(folderName string) (string, error) {
 	return token, nil
 }
 
-func (u *UserService) CreateUser(fldName string) (string, error) {
-	folderExt := u.FileService.FolderExist(fldName)
+func (u *UserService) CreateUser(fldName string, connUsrToFld bool) (string, error) {
+	folderExt := u.FolderService.FolderExist(fldName)
 
 	if folderExt {
 		return "", errsvc.ErrFolderExist
@@ -67,7 +67,7 @@ func (u *UserService) CreateUser(fldName string) (string, error) {
 		return "", err
 	}
 
-	err = u.FileService.CreateFolder(fldName)
+	err = u.FolderService.CreateFolder(fldName, usrModel.ID)
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to create folder")

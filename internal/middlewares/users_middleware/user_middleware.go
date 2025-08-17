@@ -20,7 +20,7 @@ func CreateUserMidd(c *gin.Context) {
 
 	if err := validation.Validate.Struct(dto); err != nil {
 		log.Error().Err(err).Msg("failed to validate request")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Folder name is invalid or too long"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to validate request"})
 		c.Abort()
 		return
 	}

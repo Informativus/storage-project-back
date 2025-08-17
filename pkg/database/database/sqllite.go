@@ -3,6 +3,9 @@ package database
 import (
 	"context"
 	"database/sql"
+	"errors"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type SQLiteConn struct {
@@ -33,6 +36,10 @@ func (s *SQLiteConn) Exec(ctx context.Context, query string, args ...any) (Comma
 	}
 
 	return &SQLiteCommandTag{res: res}, nil
+}
+
+func (s *SQLiteConn) IsErrNoRows(err error) bool {
+	return errors.Is(err, pgx.ErrNoRows)
 }
 
 func (t *SQLiteCommandTag) RowsAffected() int64 {

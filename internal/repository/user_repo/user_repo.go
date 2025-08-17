@@ -9,12 +9,12 @@ import (
 )
 
 type UserRepo struct {
-	conn database.DBClient
+	db database.DBClient
 }
 
-func NewUserRepo(conn database.DBClient) *UserRepo {
+func NewUserRepo(db database.DBClient) *UserRepo {
 	return &UserRepo{
-		conn: conn,
+		db: db,
 	}
 }
 
@@ -27,7 +27,7 @@ func (ur *UserRepo) CreateUser(user user_model.UserModel) (user_model.UserModel,
 	query := sql_builder.BuildInsertQuery(user_model.TableName, cols, phs)
 
 	var inserted user_model.UserModel
-	err = ur.conn.QueryRow(context.Background(), query, vals...).Scan(
+	err = ur.db.QueryRow(context.Background(), query, vals...).Scan(
 		&inserted.ID,
 		&inserted.Token,
 		&inserted.Blocked,

@@ -11,6 +11,8 @@ var (
 	ErrFolderExist       = errors.New("folder_exist")
 	ErrTokenSignFailed   = errors.New("token_sign_failed")
 	ErrGenFolderFailed   = errors.New("gen_folder_failed")
+	ErrFldDeleteFailed   = errors.New("fld_delete_failed")
+	ErrFldNotFound       = errors.New("fld_not_found")
 	ErrBadRequest        = errors.New("bad_request")
 )
 
@@ -56,6 +58,16 @@ func (e *ErrorService) MapError(err error) HttpError {
 		return HttpError{
 			Message: "Bad request",
 			Code:    http.StatusBadRequest,
+		}
+	case ErrFldDeleteFailed:
+		return HttpError{
+			Message: "Failed to delete folder",
+			Code:    http.StatusInternalServerError,
+		}
+	case ErrFldNotFound:
+		return HttpError{
+			Message: "Folder not found",
+			Code:    http.StatusNotFound,
 		}
 	default:
 		return HttpError{

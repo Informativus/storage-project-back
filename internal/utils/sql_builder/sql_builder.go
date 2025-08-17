@@ -28,7 +28,7 @@ func InsertArgs[T any](model T) (cols []string, vals []any, placeholders []strin
 		field := typ.Field(i)
 
 		if field.Tag.Get("json") == "" {
-			err = errors.New("model must be a struct")
+			err = errors.New("the model must be described correctly")
 			log.Error().Msg(err.Error())
 			return nil, nil, nil, err
 		}
@@ -51,4 +51,49 @@ func BuildInsertQuery(table string, cols []string, placeholders []string) string
 		strings.Join(cols, ", "),
 		strings.Join(placeholders, ", "),
 	)
+}
+
+func SelectArgs[T any](model T) (cols []string, err error) {
+	typ := reflect.TypeOf(model)
+
+	if typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
+	}
+
+	for i := 0; i < typ.NumField(); i++ {
+		field := typ.Field(i)
+
+		if field.Tag.Get("json") == "" {
+			err = errors.New("the model must be described correctly")
+			log.Error().Msg(err.Error())
+			return nil, err
+		}
+
+		if field.Tag.Get("json") == "-" {
+			continue
+		}
+
+		cols = append(cols, field.Tag.Get("json"))
+	}
+
+	return cols, nil
+}
+
+func BuildSelectQuery(table string, cols []string, whereExpression *string) string {
+	if whereExpression == nil {
+		return fmt.Sprintf("SELECT %s FROM %s",
+			strings.Join(cols, ", "),
+			table,
+		)
+	}
+
+	return fmt.Sprintf("SELECT %s FROM %s WHERE %s",
+		strings.Join(cols, ", "),
+		table,
+		*whereExpression,
+	)
+}
+
+func BuildDeleteQuery(table string, whereExpression string) string {
+	return fmt.Sprintf("DELETE FROM %s WHERE %s", table, whereExpression)
 }

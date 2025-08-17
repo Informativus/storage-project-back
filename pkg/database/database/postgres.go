@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/ivan/storage-project-back/pkg/config"
@@ -20,6 +21,10 @@ func NewPgxConn(conn *pgx.Conn) *PgxConn {
 
 func (p *PgxConn) QueryRow(ctx context.Context, sql string, args ...any) Row {
 	return p.conn.QueryRow(ctx, sql, args...)
+}
+
+func (p *PgxConn) IsErrNoRows(err error) bool {
+	return errors.Is(err, pgx.ErrNoRows)
 }
 
 func (p *PgxConn) Exec(ctx context.Context, query string, args ...any) (CommandTag, error) {
