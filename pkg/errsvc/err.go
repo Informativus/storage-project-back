@@ -11,6 +11,7 @@ var (
 	ErrFolderExist       = errors.New("folder_exist")
 	ErrTokenSignFailed   = errors.New("token_sign_failed")
 	ErrGenFolderFailed   = errors.New("gen_folder_failed")
+	ErrBadRequest        = errors.New("bad_request")
 )
 
 type HttpError struct {
@@ -38,7 +39,7 @@ func (e *ErrorService) MapError(err error) HttpError {
 		}
 	case ErrFolderExist:
 		return HttpError{
-			Message: "Folder for this user alrady exist",
+			Message: "Folder with this name alrady exist",
 			Code:    http.StatusBadRequest,
 		}
 	case ErrTokenSignFailed:
@@ -50,6 +51,11 @@ func (e *ErrorService) MapError(err error) HttpError {
 		return HttpError{
 			Message: "Failed to generate folder",
 			Code:    http.StatusInternalServerError,
+		}
+	case ErrBadRequest:
+		return HttpError{
+			Message: "Bad request",
+			Code:    http.StatusBadRequest,
 		}
 	default:
 		return HttpError{

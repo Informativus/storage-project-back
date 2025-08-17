@@ -8,10 +8,11 @@ import (
 )
 
 type Config struct {
-	PostgresUser     string
-	PostgresPassword string
-	PostgresDb       string
-	PostgresPort     string
+	DatabaseUser     string
+	DatabasePassword string
+	DatabaseDb       string
+	DatabasePort     string
+	DatabaseHost     string
 	Port             string
 	StoragePath      string
 	SecretKey        string
@@ -23,10 +24,11 @@ func NewConfig() (*Config, error) {
 	}
 
 	cfg := &Config{
-		PostgresUser:     getStrFromEnv("POSTGRES_USER", true),
-		PostgresPassword: getStrFromEnv("POSTGRES_PASSWORD", true),
-		PostgresDb:       getStrFromEnv("POSTGRES_DB", true),
-		PostgresPort:     getStrFromEnv("POSTGRES_PORT", true),
+		DatabaseUser:     getStrFromEnv("DATABASE_USER", true),
+		DatabasePassword: getStrFromEnv("DATABASE_PASSWORD", true),
+		DatabaseDb:       getStrFromEnv("DATABASE_DB", true),
+		DatabasePort:     getStrFromEnv("DATABASE_PORT", true),
+		DatabaseHost:     getStrFromEnv("DATABASE_HOST", true),
 		Port:             getStrFromEnv("PORT", true),
 		StoragePath:      getStrFromEnv("STORAGE_PATH", true),
 		SecretKey:        getStrFromEnv("SECRET_KEY", true),

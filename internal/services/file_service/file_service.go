@@ -1,13 +1,13 @@
 package file_service
 
 import (
-	"errors"
 	"mime/multipart"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/ivan/storage-project-back/pkg/config"
+	"github.com/ivan/storage-project-back/pkg/errsvc"
 	"github.com/rs/zerolog/log"
 )
 
@@ -46,7 +46,7 @@ func (f *FileService) FolderExist(folderName string) bool {
 
 func (f *FileService) CreateFolder(folderName string) error {
 	if folderName == "" || strings.ContainsAny(folderName, `/\:*?"<>|`) {
-		return errors.New("invalid_folder_name")
+		return errsvc.ErrInvalidFolderName
 	}
 
 	fullPath := filepath.Join(f.StoragePath, folderName)
@@ -55,7 +55,7 @@ func (f *FileService) CreateFolder(folderName string) error {
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to create folder")
-		return errors.New("gen_folder_failed")
+		return errsvc.ErrGenFolderFailed
 	}
 
 	log.Debug().Str("path", fullPath).Msg("folder created")

@@ -4,3 +4,4 @@
 bin/
 EOF
 tmp/
+.DS_Store

@@ -1,10 +1,10 @@
 package user_controller
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ivan/storage-project-back/internal/controllers/dtos/user_dto"
 	"github.com/ivan/storage-project-back/internal/services"
 	"github.com/ivan/storage-project-back/internal/services/user_service"
 	"github.com/ivan/storage-project-back/pkg/errsvc"
@@ -22,48 +22,10 @@ func NewUserController(services *services.Services, err *errsvc.ErrorService) *U
 	}
 }
 
-func (uc *UserController) GenerateTokenForUser(c *gin.Context) {
-	fldName := c.Query("fldName")
-
-	if fldName == "" {
-		httpErr := uc.ErrorService.MapError(errsvc.ErrInvalidFolder)
-		c.JSON(httpErr.Code, gin.H{"error": httpErr.Message})
-		return
-	}
-
-	token, err := uc.UserService.GenerateToken(fldName)
-
-	if err != nil {
-		httpErr := uc.ErrorService.MapError(err)
-		c.JSON(httpErr.Code, gin.H{"error": httpErr.Message})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": token})
-}
-
 func (uc *UserController) CreateUser(c *gin.Context) {
-	fldName := c.Query("fldName")
+	dto := c.MustGet("userDTO").(user_dto.CreateUserDto)
 
-	if fldName == "" {
-		httpErr := uc.ErrorService.MapError(errors.New("invalid_folder_name"))
-		c.JSON(httpErr.Code, gin.H{"error": httpErr.Message})
-		return
-	}
-
-	err := uc.UserService.CreateUser(fldName)
-
-	if err != nil {
-		httpErr := uc.ErrorService.MapError(err)
-		c.JSON(httpErr.Code, gin.H{
-			"error":   httpErr.Message,
-			"code":    httpErr.Code,
-			"details": err.Error(),
-		})
-		return
-	}
-
-	token, err := uc.UserService.GenerateToken(fldName)
+	token, err := uc.UserService.CreateUser(dto.FldName)
 
 	if err != nil {
 		httpErr := uc.ErrorService.MapError(err)

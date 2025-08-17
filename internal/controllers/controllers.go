@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/ivan/storage-project-back/internal/controllers/file_controller"
 	"github.com/ivan/storage-project-back/internal/controllers/user_controller"
+	"github.com/ivan/storage-project-back/internal/middlewares/users_middleware"
 	"github.com/ivan/storage-project-back/internal/services"
 	"github.com/ivan/storage-project-back/pkg/errsvc"
 )
@@ -30,8 +31,7 @@ func (c *Controllers) RegisterRoutes(router *gin.Engine) {
 
 		user := api.Group("/user")
 		{
-			user.GET("/token", c.UserController.GenerateTokenForUser)
-			user.POST("/create", c.UserController.CreateUser)
+			user.POST("/create", users_middleware.CreateUserMidd, c.UserController.CreateUser)
 		}
 	}
 }
