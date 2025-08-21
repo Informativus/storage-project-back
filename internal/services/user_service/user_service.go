@@ -32,8 +32,8 @@ func NewUserService(
 	}
 }
 
-func (u *UserService) GenerateToken(folderName string) (string, error) {
-	token, err := u.jwt.GenerateToken(jwt_service.JwtPayload{FolderName: folderName})
+func (u *UserService) GenerateToken(payload jwt_service.JwtPayload) (string, error) {
+	token, err := u.jwt.GenerateToken(payload)
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to sign token")
@@ -50,14 +50,18 @@ func (u *UserService) CreateUser(fldName string, connUsrToFld bool) (string, err
 		return "", errsvc.ErrFolderExist
 	}
 
-	token, err := u.GenerateToken(fldName)
+	usrID := uuid.New()
+
+	token, err := u.GenerateToken(jwt_service.JwtPayload{
+		ID: usrID,
+	})
 
 	if err != nil {
 		return "", err
 	}
 
 	usrModel, err := u.UserRepo.CreateUser(user_model.UserModel{
-		ID:      uuid.New(),
+		ID:      usrID,
 		Token:   token,
 		Blocked: false,
 	})
@@ -71,8 +75,18 @@ func (u *UserService) CreateUser(fldName string, connUsrToFld bool) (string, err
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to create folder")
+
+		if delErr := u.DelUser(usrModel.ID); delErr != nil {
+			log.Error().Err(delErr).Str("user_id", usrModel.ID.String()).
+				Msg("rollback failed, inconsistent state: user exists without folder. You must delete the user yourself")
+			return "", errsvc.ErrInconsistentState
+		}
 		return "", err
 	}
 
 	return usrModel.Token, nil
+}
+
+func (u *UserService) DelUser(id uuid.UUID) error {
+	return u.UserRepo.DelUser(id)
 }

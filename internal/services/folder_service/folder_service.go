@@ -73,7 +73,7 @@ func (f *FolderService) CreateFolder(folderName string, usrID uuid.UUID) error {
 	return nil
 }
 
-func (f *FolderService) DeleteMainFld(fldName string) error {
+func (f *FolderService) DelMainFld(fldName string) error {
 	fldModel, err := f.FolderRepo.GetGeneralFolderByName(fldName)
 
 	if err != nil {
@@ -88,7 +88,7 @@ func (f *FolderService) DeleteMainFld(fldName string) error {
 		return errsvc.ErrFldDeleteFailed
 	}
 
-	err = f.FolderRepo.DeleteMainFld(fldModel.ID)
+	err = f.FolderRepo.DelMainFld(fldModel.ID)
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to delete folder")

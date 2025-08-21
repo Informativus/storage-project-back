@@ -9,7 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func DeleteFld(c *gin.Context) {
+func DelFld(c *gin.Context) {
 	fldName := c.Param("fldName")
 
 	var dto fld_dto.DeleteFld

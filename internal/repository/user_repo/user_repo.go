@@ -2,10 +2,14 @@ package user_repo
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/ivan/storage-project-back/internal/models/user_model"
 	"github.com/ivan/storage-project-back/internal/utils/sql_builder"
 	"github.com/ivan/storage-project-back/pkg/database/database"
+	"github.com/rs/zerolog/log"
 )
 
 type UserRepo struct {
@@ -37,4 +41,22 @@ func (ur *UserRepo) CreateUser(user user_model.UserModel) (user_model.UserModel,
 	}
 
 	return inserted, nil
+}
+
+func (ur *UserRepo) DelUser(id uuid.UUID) error {
+	query := sql_builder.BuildDeleteQuery(user_model.TableName, "id = $1")
+
+	tag, err := ur.db.Exec(context.Background(), query, id)
+
+	if err != nil {
+		log.Error().Err(err).Msg("failed to delete user")
+		return err
+	}
+
+	if tag.RowsAffected() == 0 {
+		log.Error().Msg(fmt.Sprintf("failed to delete user with id %s", id.String()))
+		return errors.New("failed_delete")
+	}
+
+	return nil
 }

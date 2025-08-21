@@ -14,6 +14,7 @@ var (
 	ErrFldDeleteFailed   = errors.New("fld_delete_failed")
 	ErrFldNotFound       = errors.New("fld_not_found")
 	ErrBadRequest        = errors.New("bad_request")
+	ErrInconsistentState = errors.New("inconsistent_state")
 )
 
 type HttpError struct {
@@ -68,6 +69,11 @@ func (e *ErrorService) MapError(err error) HttpError {
 		return HttpError{
 			Message: "Folder not found",
 			Code:    http.StatusNotFound,
+		}
+	case ErrInconsistentState:
+		return HttpError{
+			Message: "Inconsistent state",
+			Code:    http.StatusInternalServerError,
 		}
 	default:
 		return HttpError{

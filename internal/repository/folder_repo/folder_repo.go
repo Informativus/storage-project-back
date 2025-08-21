@@ -79,7 +79,7 @@ func (f *FldRepo) GetGeneralFolderByName(fldName string) (folder_model.FolderMod
 	return selected, nil
 }
 
-func (f *FldRepo) DeleteMainFld(id uuid.UUID) error {
+func (f *FldRepo) DelMainFld(id uuid.UUID) error {
 	query := sql_builder.BuildDeleteQuery(folder_model.TableName, "id = $1")
 
 	tag, err := f.db.Exec(context.Background(), query, id)
@@ -89,7 +89,7 @@ func (f *FldRepo) DeleteMainFld(id uuid.UUID) error {
 
 	if tag.RowsAffected() == 0 {
 		log.Error().Msg(fmt.Sprintf("failed to delete folder with id %s", id.String()))
-		return errors.New("failed delete")
+		return errors.New("failed_delete")
 	}
 
 	return nil

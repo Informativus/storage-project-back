@@ -5,11 +5,12 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-    "github.com/ivan/storage-project-back/pkg/config"
+	"github.com/google/uuid"
+	"github.com/ivan/storage-project-back/pkg/config"
 )
 
 type JwtPayload struct {
-	FolderName string
+	ID uuid.UUID
 }
 
 type JwtService struct {
@@ -22,9 +23,9 @@ func NewJwtService(cfg *config.Config) *JwtService {
 
 func (s *JwtService) GenerateToken(payload JwtPayload) (string, error) {
 	claims := jwt.MapClaims{
-		"folderName": payload.FolderName,
-		"exp":        time.Now().Add(time.Hour * 24).Unix(),
-		"iat":        time.Now().Unix(),
+		"id":  payload.ID,
+		"exp": time.Now().Add(time.Hour * 24).Unix(),
+		"iat": time.Now().Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

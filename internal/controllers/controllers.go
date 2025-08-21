@@ -35,7 +35,7 @@ func (c *Controllers) RegisterRoutes(router *gin.Engine) {
 
 		fld := api.Group("/fld")
 		{
-			fld.DELETE("/delete/:fldName", fld_middleware.DeleteFld, c.FldController.DeleteFld)
+			fld.DELETE("/delete/:fldName", fld_middleware.DelFld, c.FldController.DelFld)
 		}
 
 		file := api.Group("/file")
