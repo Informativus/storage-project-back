@@ -1,6 +1,8 @@
 package user_service
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/ivan/storage-project-back/internal/models/user_model"
 	"github.com/ivan/storage-project-back/internal/repository/user_repo"
@@ -32,7 +34,63 @@ func NewUserService(
 	}
 }
 
-func (u *UserService) GenerateToken(payload jwt_service.JwtPayload) (string, error) {
+func (u *UserService) CreateUser(usrName string, connUsrToFld bool) (string, error) {
+	folderExt := u.FolderService.FolderExist(usrName)
+
+	if folderExt {
+		return "", errsvc.ErrFolderExist
+	}
+
+	usrID := uuid.New()
+
+	token, err := u.generateToken(jwt_service.JwtPayload{
+		ID: usrID,
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	usrModel, err := u.UserRepo.CreateUser(user_model.UserModel{
+		ID:        usrID,
+		Name:      usrName,
+		Blocked:   false,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	})
+
+	if err != nil {
+		log.Error().Err(err).Msg("failed to create user")
+		return "", err
+	}
+
+	usrAccessModel, err := u.UserRepo.InsertUserToken(user_model.UserTokensModel{
+		ID:        uuid.New(),
+		UserID:    usrModel.ID,
+		Token:     token,
+		Revoked:   false,
+		CreatedAt: usrModel.CreatedAt,
+		ExpiresAt: usrModel.CreatedAt.Add(time.Duration(u.cfg.ExpiresIn) * time.Second),
+	})
+
+	if err != nil {
+		return "", u.rollbackUser(usrModel.ID, "failed to create user access token", err)
+	}
+
+	err = u.FolderService.CreateFolder(usrName, usrModel.ID)
+
+	if err != nil {
+		return "", u.rollbackUser(usrModel.ID, "failed to create user folder", err)
+	}
+
+	return usrAccessModel.Token, nil
+}
+
+func (u *UserService) DelUser(id uuid.UUID) error {
+	return u.UserRepo.DelUser(id)
+}
+
+func (u *UserService) generateToken(payload jwt_service.JwtPayload) (string, error) {
 	token, err := u.jwt.GenerateToken(payload)
 
 	if err != nil {
@@ -43,50 +101,13 @@ func (u *UserService) GenerateToken(payload jwt_service.JwtPayload) (string, err
 	return token, nil
 }
 
-func (u *UserService) CreateUser(fldName string, connUsrToFld bool) (string, error) {
-	folderExt := u.FolderService.FolderExist(fldName)
+func (u *UserService) rollbackUser(id uuid.UUID, logMsg string, err error) error {
+	log.Error().Err(err).Msg(logMsg)
 
-	if folderExt {
-		return "", errsvc.ErrFolderExist
+	if delErr := u.DelUser(id); delErr != nil {
+		log.Error().Err(delErr).Str("user_id", id.String()).
+			Msg("rollback failed, inconsistent state: manual cleanup required")
+		return errsvc.ErrInconsistentState
 	}
-
-	usrID := uuid.New()
-
-	token, err := u.GenerateToken(jwt_service.JwtPayload{
-		ID: usrID,
-	})
-
-	if err != nil {
-		return "", err
-	}
-
-	usrModel, err := u.UserRepo.CreateUser(user_model.UserModel{
-		ID:      usrID,
-		Token:   token,
-		Blocked: false,
-	})
-
-	if err != nil {
-		log.Error().Err(err).Msg("failed to create user")
-		return "", err
-	}
-
-	err = u.FolderService.CreateFolder(fldName, usrModel.ID)
-
-	if err != nil {
-		log.Error().Err(err).Msg("failed to create folder")
-
-		if delErr := u.DelUser(usrModel.ID); delErr != nil {
-			log.Error().Err(delErr).Str("user_id", usrModel.ID.String()).
-				Msg("rollback failed, inconsistent state: user exists without folder. You must delete the user yourself")
-			return "", errsvc.ErrInconsistentState
-		}
-		return "", err
-	}
-
-	return usrModel.Token, nil
-}
-
-func (u *UserService) DelUser(id uuid.UUID) error {
-	return u.UserRepo.DelUser(id)
+	return err
 }

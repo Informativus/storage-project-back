@@ -24,7 +24,7 @@ func NewJwtService(cfg *config.Config) *JwtService {
 func (s *JwtService) GenerateToken(payload JwtPayload) (string, error) {
 	claims := jwt.MapClaims{
 		"id":  payload.ID,
-		"exp": time.Now().Add(time.Hour * 24).Unix(),
+		"exp": time.Now().Unix() + s.cfg.ExpiresIn,
 		"iat": time.Now().Unix(),
 	}
 

@@ -36,15 +36,38 @@ func (f *FldRepo) CreateFld(fldModel folder_model.FolderModel) (folder_model.Fol
 	err = f.db.QueryRow(context.Background(), query, vals...).Scan(
 		&inserted.ID,
 		&inserted.Name,
-		&inserted.UserID,
 		&inserted.ParentID,
-		&inserted.Path,
+		&inserted.OwnerID,
 		&inserted.CreatedAt,
-		&inserted.LastUpdate,
+		&inserted.UpdatedAt,
 	)
 
 	if err != nil {
 		return fldModel, err
+	}
+
+	return inserted, nil
+}
+
+func (f *FldRepo) InsertFolderAccess(fldAccessModel folder_model.FolderAccessModel) (folder_model.FolderAccessModel, error) {
+	cals, vals, phs, err := sql_builder.InsertArgs(fldAccessModel)
+
+	if err != nil {
+		return folder_model.FolderAccessModel{}, err
+	}
+
+	query := sql_builder.BuildInsertQuery(folder_model.AccessTableName, cals, phs)
+
+	var inserted folder_model.FolderAccessModel
+
+	err = f.db.QueryRow(context.Background(), query, vals...).Scan(
+		&inserted.FolderID,
+		&inserted.UserID,
+		&inserted.RoleID,
+	)
+
+	if err != nil {
+		return folder_model.FolderAccessModel{}, err
 	}
 
 	return inserted, nil
@@ -65,11 +88,9 @@ func (f *FldRepo) GetGeneralFolderByName(fldName string) (folder_model.FolderMod
 	err = f.db.QueryRow(context.Background(), query, fldName).Scan(
 		&selected.ID,
 		&selected.Name,
-		&selected.UserID,
 		&selected.ParentID,
-		&selected.Path,
 		&selected.CreatedAt,
-		&selected.LastUpdate,
+		&selected.UpdatedAt,
 	)
 
 	if err != nil && f.db.IsErrNoRows(err) {

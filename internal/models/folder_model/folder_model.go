@@ -14,11 +14,10 @@ const (
 )
 
 type FolderModel struct {
-	ID         uuid.UUID  `json:"id"`
-	Name       string     `json:"name"`
-	UserID     uuid.UUID  `json:"user_id"`
-	ParentID   *uuid.UUID `json:"parent_id"`
-	Path       string     `json:"path"`
-	CreatedAt  time.Time  `json:"created_at"`
-	LastUpdate time.Time  `json:"last_update"`
+	ID        uuid.UUID  `json:"id"`
+	Name      string     `json:"name"`
+	ParentID  *uuid.UUID `json:"parent_id"`
+	OwnerID   uuid.UUID  `json:"owner_id"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
 }

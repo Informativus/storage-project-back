@@ -1,14 +1,19 @@
 package user_model
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 const (
 	TableName = "users"
-	TokenLen  = 255
 )
 
 type UserModel struct {
-	ID      uuid.UUID `json:"id"`
-	Token   string    `json:"token"`
-	Blocked bool      `json:"blocked"`
+	ID        uuid.UUID `json:"id"`
+	Name      string    `json:"name"`
+	Blocked   bool      `json:"blocked"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

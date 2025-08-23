@@ -33,11 +33,40 @@ func (ur *UserRepo) CreateUser(user user_model.UserModel) (user_model.UserModel,
 	var inserted user_model.UserModel
 	err = ur.db.QueryRow(context.Background(), query, vals...).Scan(
 		&inserted.ID,
-		&inserted.Token,
+		&inserted.Name,
 		&inserted.Blocked,
+		&inserted.CreatedAt,
+		&inserted.UpdatedAt,
 	)
 	if err != nil {
 		return user, err
+	}
+
+	return inserted, nil
+}
+
+func (ur *UserRepo) InsertUserToken(user user_model.UserTokensModel) (user_model.UserTokensModel, error) {
+	cols, vals, phs, err := sql_builder.InsertArgs(user)
+
+	if err != nil {
+		return user_model.UserTokensModel{}, err
+	}
+
+	query := sql_builder.BuildInsertQuery(user_model.TokenTableName, cols, phs)
+
+	var inserted user_model.UserTokensModel
+
+	err = ur.db.QueryRow(context.Background(), query, vals...).Scan(
+		&inserted.ID,
+		&inserted.UserID,
+		&inserted.Token,
+		&inserted.Revoked,
+		&inserted.CreatedAt,
+		&inserted.ExpiresAt,
+	)
+
+	if err != nil {
+		return user_model.UserTokensModel{}, err
 	}
 
 	return inserted, nil

@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/ivan/storage-project-back/internal/models/folder_model"
+	"github.com/ivan/storage-project-back/internal/models/roles_model"
 	"github.com/ivan/storage-project-back/internal/repository/folder_repo"
 	"github.com/ivan/storage-project-back/pkg/config"
 	"github.com/ivan/storage-project-back/pkg/errsvc"
@@ -16,18 +17,18 @@ import (
 
 type FolderService struct {
 	StoragePath string
-	FolderRepo  *folder_repo.FldRepo
+	FldRepo     *folder_repo.FldRepo
 }
 
 func NewFldService(cfg *config.Config, fldRepo *folder_repo.FldRepo) *FolderService {
 	return &FolderService{
 		StoragePath: cfg.StoragePath,
-		FolderRepo:  fldRepo,
+		FldRepo:     fldRepo,
 	}
 }
 
 func (f *FolderService) FolderExist(fldName string) bool {
-	fldModel, err := f.FolderRepo.GetGeneralFolderByName(fldName)
+	fldModel, err := f.FldRepo.GetGeneralFolderByName(fldName)
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get folder")
@@ -41,8 +42,8 @@ func (f *FolderService) FolderExist(fldName string) bool {
 	return true
 }
 
-func (f *FolderService) CreateFolder(folderName string, usrID uuid.UUID) error {
-	fullPath := filepath.Join(f.StoragePath, folderName)
+func (f *FolderService) CreateFolder(fldName string, usrID uuid.UUID) error {
+	fullPath := filepath.Join(f.StoragePath, fldName)
 
 	err := os.MkdirAll(fullPath, 0755) // TODO: Убрать магические числа
 
@@ -51,19 +52,31 @@ func (f *FolderService) CreateFolder(folderName string, usrID uuid.UUID) error {
 		return errsvc.ErrGenFolderFailed
 	}
 
-	fldModel, err := f.FolderRepo.CreateFld(folder_model.FolderModel{
-		ID:         uuid.New(),
-		Name:       folderName,
-		UserID:     usrID,
-		ParentID:   nil,
-		Path:       folderName,
-		CreatedAt:  time.Now(),
-		LastUpdate: time.Now(),
+	fldModel, err := f.FldRepo.CreateFld(folder_model.FolderModel{
+		ID:        uuid.New(),
+		Name:      fldName,
+		ParentID:  nil,
+		OwnerID:   usrID,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	})
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to create folder model")
-		return err
+		os.RemoveAll(fullPath)
+		return errsvc.ErrGenFolderFailed
+	}
+
+	_, err = f.FldRepo.InsertFolderAccess(folder_model.FolderAccessModel{
+		FolderID: fldModel.ID,
+		UserID:   usrID,
+		RoleID:   int8(roles_model.Roles["admin"]),
+	})
+
+	if err != nil {
+		log.Error().Err(err).Msg("failed to insert folder access")
+		os.RemoveAll(fullPath)
+		return errsvc.ErrGenFolderFailed
 	}
 
 	log.Debug().
@@ -74,7 +87,7 @@ func (f *FolderService) CreateFolder(folderName string, usrID uuid.UUID) error {
 }
 
 func (f *FolderService) DelMainFld(fldName string) error {
-	fldModel, err := f.FolderRepo.GetGeneralFolderByName(fldName)
+	fldModel, err := f.FldRepo.GetGeneralFolderByName(fldName)
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get folder")
@@ -88,7 +101,7 @@ func (f *FolderService) DelMainFld(fldName string) error {
 		return errsvc.ErrFldDeleteFailed
 	}
 
-	err = f.FolderRepo.DelMainFld(fldModel.ID)
+	err = f.FldRepo.DelMainFld(fldModel.ID)
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to delete folder")

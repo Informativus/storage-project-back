@@ -26,7 +26,7 @@ func CreateUserMidd(c *gin.Context) {
 	}
 
 	userDTO := user_dto.CreateUserDto{
-		FldName: dto.FldName,
+		UrsName: dto.UrsName,
 	}
 
 	c.Set("userDTO", userDTO)
