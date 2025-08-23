@@ -38,6 +38,7 @@ func (f *FldRepo) CreateFld(fldModel folder_model.FolderModel) (folder_model.Fol
 		&inserted.Name,
 		&inserted.ParentID,
 		&inserted.OwnerID,
+		&inserted.MainFldId,
 		&inserted.CreatedAt,
 		&inserted.UpdatedAt,
 	)
@@ -73,11 +74,11 @@ func (f *FldRepo) InsertFolderAccess(fldAccessModel folder_model.FolderAccessMod
 	return inserted, nil
 }
 
-func (f *FldRepo) GetGeneralFolderByName(fldName string) (folder_model.FolderModel, error) {
+func (f *FldRepo) GetGeneralFolderByName(fldName string) (*folder_model.FolderModel, error) {
 	cals, err := sql_builder.SelectArgs(folder_model.FolderModel{})
 
 	if err != nil {
-		return folder_model.FolderModel{}, err
+		return nil, err
 	}
 
 	where := "name = $1"
@@ -89,18 +90,53 @@ func (f *FldRepo) GetGeneralFolderByName(fldName string) (folder_model.FolderMod
 		&selected.ID,
 		&selected.Name,
 		&selected.ParentID,
+		&selected.OwnerID,
+		&selected.MainFldId,
 		&selected.CreatedAt,
 		&selected.UpdatedAt,
 	)
 
 	if err != nil && f.db.IsErrNoRows(err) {
-		return folder_model.FolderModel{}, err
+		return nil, nil
+	} else if err != nil {
+		return nil, err
 	}
 
-	return selected, nil
+	return &selected, nil
 }
 
-func (f *FldRepo) DelMainFld(id uuid.UUID) error {
+func (f *FldRepo) GetFldByName(fldName string) (*folder_model.FolderModel, error) {
+	cals, err := sql_builder.SelectArgs(folder_model.FolderModel{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	where := "name = $1"
+
+	query := sql_builder.BuildSelectQuery(folder_model.TableName, cals, &where)
+
+	selected := folder_model.FolderModel{}
+	err = f.db.QueryRow(context.Background(), query, fldName).Scan(
+		&selected.ID,
+		&selected.Name,
+		&selected.ParentID,
+		&selected.OwnerID,
+		&selected.MainFldId,
+		&selected.CreatedAt,
+		&selected.UpdatedAt,
+	)
+
+	if err != nil && f.db.IsErrNoRows(err) {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &selected, nil
+}
+
+func (f *FldRepo) DelFld(id uuid.UUID) error {
 	query := sql_builder.BuildDeleteQuery(folder_model.TableName, "id = $1")
 
 	tag, err := f.db.Exec(context.Background(), query, id)

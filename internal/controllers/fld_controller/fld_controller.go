@@ -25,7 +25,7 @@ func NewFldController(services *services.Services, err *errsvc.ErrorService) *Fl
 func (fc *FldController) DelFld(c *gin.Context) {
 	dto := c.MustGet("deleteDTO").(fld_dto.DeleteFld)
 
-	err := fc.fldService.DelMainFld(dto.Name)
+	err := fc.fldService.DelFld(dto.Name)
 
 	if err != nil {
 		httpErr := fc.err.MapError(err)

@@ -87,6 +87,17 @@ func (u *UserService) CreateUser(usrName string, connUsrToFld bool) (string, err
 }
 
 func (u *UserService) DelUser(id uuid.UUID) error {
+	usr, err := u.UserRepo.GetUserById(id)
+
+	if err != nil {
+		log.Error().Err(err).Msg("failed to get user")
+		return err
+	}
+
+	if usr == nil {
+		return errsvc.ErrUsrNotFound
+	}
+
 	return u.UserRepo.DelUser(id)
 }
 

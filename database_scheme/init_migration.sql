@@ -22,6 +22,7 @@ CREATE TABLE folders (
     name VARCHAR(255) NOT NULL,
     parent_id UUID REFERENCES folders(id) ON DELETE SET NULL,
     owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    main_folder_id UUID REFERENCES folders(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -44,3 +45,4 @@ CREATE TABLE folder_access (
     PRIMARY KEY (folder_id, user_id)
 );
 
+CREATE VIEW MAIN_USER_FOLDER AS SELECT * FROM FOLDERS WHERE MAIN_FOLDER_ID IS NULL;

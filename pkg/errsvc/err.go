@@ -13,6 +13,8 @@ var (
 	ErrGenFolderFailed   = errors.New("gen_folder_failed")
 	ErrFldDeleteFailed   = errors.New("fld_delete_failed")
 	ErrFldNotFound       = errors.New("fld_not_found")
+	ErrUsrNotFound       = errors.New("usr_not_found")
+	ErrCantDelMainFld    = errors.New("cant_del_main_folder")
 	ErrBadRequest        = errors.New("bad_request")
 	ErrInconsistentState = errors.New("inconsistent_state")
 )
@@ -74,6 +76,16 @@ func (e *ErrorService) MapError(err error) HttpError {
 		return HttpError{
 			Message: "Inconsistent state",
 			Code:    http.StatusInternalServerError,
+		}
+	case ErrCantDelMainFld:
+		return HttpError{
+			Message: "Can't delete main folder",
+			Code:    http.StatusBadRequest,
+		}
+	case ErrUsrNotFound:
+		return HttpError{
+			Message: "User not found",
+			Code:    http.StatusBadRequest,
 		}
 	default:
 		return HttpError{

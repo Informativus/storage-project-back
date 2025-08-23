@@ -41,3 +41,16 @@ func (uc *UserController) CreateUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
+
+func (uc *UserController) DeleteUser(c *gin.Context) {
+	dltUsrDto := c.MustGet("dltUsrDto").(user_dto.DeleteUserDto)
+	err := uc.UserService.DelUser(dltUsrDto.UrsID)
+	if err != nil {
+
+		httpErr := uc.ErrorService.MapError(err)
+		c.JSON(httpErr.Code, gin.H{"error": httpErr.Message})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}

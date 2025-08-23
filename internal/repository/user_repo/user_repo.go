@@ -89,3 +89,34 @@ func (ur *UserRepo) DelUser(id uuid.UUID) error {
 
 	return nil
 }
+
+func (ur *UserRepo) GetUserById(id uuid.UUID) (*user_model.UserModel, error) {
+	cols, err := sql_builder.SelectArgs(user_model.UserModel{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	where := "id = $1"
+
+	query := sql_builder.BuildSelectQuery(user_model.TableName, cols, &where)
+
+	selected := user_model.UserModel{}
+
+	err = ur.db.QueryRow(context.Background(), query, id).Scan(
+		&selected.ID,
+		&selected.Name,
+		&selected.Blocked,
+		&selected.CreatedAt,
+		&selected.UpdatedAt,
+	)
+
+	if err != nil && ur.db.IsErrNoRows(err) {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &selected, nil
+
+}

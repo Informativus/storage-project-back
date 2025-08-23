@@ -18,6 +18,7 @@ type FolderModel struct {
 	Name      string     `json:"name"`
 	ParentID  *uuid.UUID `json:"parent_id"`
 	OwnerID   uuid.UUID  `json:"owner_id"`
+	MainFldId *uuid.UUID `json:"main_folder_id"`
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`
 }

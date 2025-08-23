@@ -27,7 +27,7 @@ func NewRegistry(cfg *config.Config) *Registry {
 	jwt := jwt_service.NewJwtService(cfg)
 	repos := repository.NewRepositories(conn)
 	services := services.NewServices(cfg, repos, jwt)
-	controllers := controllers.NewControllers(services, errsvc)
+	controllers := controllers.NewControllers(services, errsvc, jwt)
 
 	return &Registry{
 		Controllers: controllers,
