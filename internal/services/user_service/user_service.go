@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/ivan/storage-project-back/internal/models/roles_model"
 	"github.com/ivan/storage-project-back/internal/models/user_model"
 	"github.com/ivan/storage-project-back/internal/repository/user_repo"
 	"github.com/ivan/storage-project-back/internal/services/folder_service"
@@ -55,6 +56,7 @@ func (u *UserService) CreateUser(usrName string, connUsrToFld bool) (string, err
 		ID:        usrID,
 		Name:      usrName,
 		Blocked:   false,
+		RoleID:    roles_model.User,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	})

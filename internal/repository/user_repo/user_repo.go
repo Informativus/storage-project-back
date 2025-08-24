@@ -35,6 +35,7 @@ func (ur *UserRepo) CreateUser(user user_model.UserModel) (user_model.UserModel,
 		&inserted.ID,
 		&inserted.Name,
 		&inserted.Blocked,
+		&inserted.RoleID,
 		&inserted.CreatedAt,
 		&inserted.UpdatedAt,
 	)
@@ -107,6 +108,7 @@ func (ur *UserRepo) GetUserById(id uuid.UUID) (*user_model.UserModel, error) {
 		&selected.ID,
 		&selected.Name,
 		&selected.Blocked,
+		&selected.RoleID,
 		&selected.CreatedAt,
 		&selected.UpdatedAt,
 	)

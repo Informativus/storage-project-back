@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/ivan/storage-project-back/internal/controllers/dtos/user_dto"
+	"github.com/ivan/storage-project-back/internal/models/user_model"
 	"github.com/ivan/storage-project-back/internal/services"
 	"github.com/ivan/storage-project-back/internal/services/user_service"
 	"github.com/ivan/storage-project-back/pkg/errsvc"
@@ -42,9 +43,9 @@ func (uc *UserController) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
-func (uc *UserController) DeleteUser(c *gin.Context) {
-	dltUsrDto := c.MustGet("dltUsrDto").(user_dto.DeleteUserDto)
-	err := uc.UserService.DelUser(dltUsrDto.UrsID)
+func (uc *UserController) DltUser(c *gin.Context) {
+	usrDTO := c.MustGet("usrDTO").(*user_model.UserModel)
+	err := uc.UserService.DelUser(usrDTO.ID)
 	if err != nil {
 
 		httpErr := uc.ErrorService.MapError(err)

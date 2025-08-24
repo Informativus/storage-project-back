@@ -1,12 +1,13 @@
-CREATE TABLE users (
-    id UUID PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    blocked BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-);
+create table roles (id serial primary key, name varchar(32) not null, note varchar(512));
 
-CREATE TABLE roles (id serial primary key, name varchar(32) not null, note varchar(512));
+create table users (
+    id uuid primary key,
+    name varchar(255) not null,
+    blocked boolean default false,
+    role_id smallint not null references roles(id) on delete cascade,
+    created_at timestamp default now(),
+    updated_at timestamp default now()
+);
 
 CREATE TABLE user_tokens (
     id UUID PRIMARY KEY,
@@ -41,7 +42,7 @@ CREATE TABLE files (
 CREATE TABLE folder_access (
     folder_id UUID NOT NULL REFERENCES folders(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    role_id int NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+    role_id SMALLINT NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
     PRIMARY KEY (folder_id, user_id)
 );
 

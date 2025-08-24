@@ -22,7 +22,7 @@ func DelFld(c *gin.Context) {
 		return
 	}
 
-	c.Set("deleteDTO", dto)
+	c.Set("dltDTO", dto)
 
 	c.Next()
 }

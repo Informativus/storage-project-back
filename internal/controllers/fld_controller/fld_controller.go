@@ -23,7 +23,7 @@ func NewFldController(services *services.Services, err *errsvc.ErrorService) *Fl
 }
 
 func (fc *FldController) DelFld(c *gin.Context) {
-	dto := c.MustGet("deleteDTO").(fld_dto.DeleteFld)
+	dto := c.MustGet("dltDTO").(fld_dto.DeleteFld)
 
 	err := fc.fldService.DelFld(dto.Name)
 

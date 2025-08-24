@@ -73,7 +73,7 @@ func (f *FolderService) CreateFolder(fldName string, usrID uuid.UUID) error {
 	_, err = f.FldRepo.InsertFolderAccess(folder_model.FolderAccessModel{
 		FolderID: fldModel.ID,
 		UserID:   usrID,
-		RoleID:   int8(roles_model.Roles["admin"]),
+		RoleID:   roles_model.Admin,
 	})
 
 	if err != nil {
