@@ -12,7 +12,7 @@ import (
 func DelFld(c *gin.Context) {
 	fldName := c.Param("fldName")
 
-	var dto fld_dto.DeleteFld
+	var dto fld_dto.DelFld
 	dto.Name = fldName
 
 	if err := validation.Validate.Struct(dto); err != nil {

@@ -2,9 +2,10 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-cmd = "go build -o tmp/server ./cmd/server"
-bin = "tmp/server"
-full_bin = ""
+cmd = "swag init -g cmd/server/main.go -o docs && go build -o ./tmp/server ./cmd/server"
+bin = "./tmp/server"
+include_dir = ["internal/controllers", "cmd/server"]
+include_ext = ["go"]
 
 [log]
 time = true
@@ -17,14 +18,12 @@ runner = "magenta"
 
 [watch]
 ext = ["go", "env", "tmpl", "tpl"]
-
-# Папки, которые нужно игнорировать
 ignore = ["uploads"]
-
-# Папки и файлы, за которыми следить
 include = [
   "cmd",
-  "internal",
+  "internal/controllers",
+  "internal/services",
+  "internal/middlewares",
   "pkg",
   ".env",
 ]

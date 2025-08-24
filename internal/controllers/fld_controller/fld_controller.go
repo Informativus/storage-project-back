@@ -22,8 +22,17 @@ func NewFldController(services *services.Services, err *errsvc.ErrorService) *Fl
 	}
 }
 
+// @Summary Delete a user folder with all his data
+// @Description Deletes a folder with all its data (subfolders, files)
+// @Tags Folders
+// @Accept json
+// @Produce json
+// @Param fldName path string true "Folder name to delete"
+// @Security BearerAuth
+// @Success 204 "No Content"
+// @Router /fld/delete/{fldName} [delete]
 func (fc *FldController) DelFld(c *gin.Context) {
-	dto := c.MustGet("dltDTO").(fld_dto.DeleteFld)
+	dto := c.MustGet("dltDTO").(fld_dto.DelFld)
 
 	err := fc.fldService.DelFld(dto.Name)
 
@@ -33,5 +42,5 @@ func (fc *FldController) DelFld(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "folder deleted"})
+	c.JSON(http.StatusNoContent, gin.H{})
 }

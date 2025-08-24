@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
+	_ "github.com/ivan/storage-project-back/docs"
 	"github.com/ivan/storage-project-back/internal/controllers"
 	"github.com/ivan/storage-project-back/internal/repository"
 	"github.com/ivan/storage-project-back/internal/services"
@@ -9,6 +11,8 @@ import (
 	"github.com/ivan/storage-project-back/pkg/errsvc"
 	"github.com/ivan/storage-project-back/pkg/jwt_service"
 	"github.com/rs/zerolog/log"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Registry struct {
@@ -16,8 +20,9 @@ type Registry struct {
 	Services    *services.Services
 }
 
-func NewRegistry(cfg *config.Config) *Registry {
+func NewRegistry(cfg *config.Config, routers *gin.Engine) *Registry {
 	conn, err := database.ConnectPg(cfg)
+	routers.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to connect to database")
