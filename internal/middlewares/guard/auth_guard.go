@@ -50,7 +50,22 @@ func AuthGuard(jwt *jwt_service.JwtService, usrRepo *user_repo.UserRepo, accessR
 			return
 		}
 
-		if !slices.Contains(accessRoles, usr.RoleID) {
+		if !slices.Contains(accessRoles, usr.RoleID) || usr.Blocked {
+			c.JSON(403, gin.H{"error": "unauthorized"})
+			c.Abort()
+			return
+		}
+
+		usrAccess, err := usrRepo.GetUserAccessById(usr.ID)
+
+		if err != nil || usrAccess == nil {
+			log.Error().Err(err).Msg("failed to get user access")
+			c.JSON(401, gin.H{"error": "invalid data"})
+			c.Abort()
+			return
+		}
+
+		if usrAccess.Revoked {
 			c.JSON(403, gin.H{"error": "unauthorized"})
 			c.Abort()
 			return

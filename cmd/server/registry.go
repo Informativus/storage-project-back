@@ -8,7 +8,7 @@ import (
 	"github.com/ivan/storage-project-back/internal/services"
 	"github.com/ivan/storage-project-back/pkg/config"
 	"github.com/ivan/storage-project-back/pkg/database/database"
-	"github.com/ivan/storage-project-back/pkg/errsvc"
+	"github.com/ivan/storage-project-back/pkg/jobs"
 	"github.com/ivan/storage-project-back/pkg/jwt_service"
 	"github.com/rs/zerolog/log"
 	swaggerFiles "github.com/swaggo/files"
@@ -28,11 +28,14 @@ func NewRegistry(cfg *config.Config, routers *gin.Engine) *Registry {
 		log.Fatal().Err(err).Msg("Failed to connect to database")
 	}
 
-	errsvc := errsvc.NewErrorService()
 	jwt := jwt_service.NewJwtService(cfg)
 	repos := repository.NewRepositories(conn)
 	services := services.NewServices(cfg, repos, jwt)
-	controllers := controllers.NewControllers(services, errsvc, jwt, repos.UserRepo)
+	controllers := controllers.NewControllers(services, jwt, repos.UserRepo)
+
+	jbs := jobs.NewStartJobs(repos)
+
+	jbs.StartAllJobs()
 
 	return &Registry{
 		Controllers: controllers,

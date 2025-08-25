@@ -6,17 +6,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/ivan/storage-project-back/internal/services"
 	"github.com/ivan/storage-project-back/internal/services/file_service"
-	"github.com/ivan/storage-project-back/pkg/errsvc"
 	"github.com/rs/zerolog/log"
 )
 
 type FileController struct {
-	FileService  *file_service.FileService
-	ErrorService *errsvc.ErrorService
+	FileService *file_service.FileService
 }
 
-func NewFileController(services *services.Services, err *errsvc.ErrorService) *FileController {
-	return &FileController{FileService: services.FileService, ErrorService: err}
+func NewFileController(services *services.Services) *FileController {
+	return &FileController{FileService: services.FileService}
 }
 
 func (f *FileController) Upload(c *gin.Context) {
@@ -30,8 +28,7 @@ func (f *FileController) Upload(c *gin.Context) {
 	dst, err := f.FileService.PrepareStorage(file)
 
 	if err != nil {
-		httpErr := f.ErrorService.MapError(err)
-		c.JSON(httpErr.Code, gin.H{"error": httpErr.Message})
+		c.Error(err)
 		return
 	}
 

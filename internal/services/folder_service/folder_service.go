@@ -27,6 +27,7 @@ func NewFldService(cfg *config.Config, fldRepo *folder_repo.FldRepo) *FolderServ
 	}
 }
 
+// TODO: Проанализировать работу метода. То что он не возвращает ошибок, странно...
 func (f *FolderService) FolderExist(fldName string) bool {
 	fldModel, err := f.FldRepo.GetGeneralFolderByName(fldName)
 
@@ -48,8 +49,7 @@ func (f *FolderService) CreateFolder(fldName string, usrID uuid.UUID) error {
 	err := os.MkdirAll(fullPath, 0755) // TODO: Убрать магические числа
 
 	if err != nil {
-		log.Error().Err(err).Msg("failed to create folder")
-		return errsvc.ErrGenFolderFailed
+		return errsvc.FldErr.CreateFailed
 	}
 
 	fldId := uuid.New()
@@ -65,9 +65,8 @@ func (f *FolderService) CreateFolder(fldName string, usrID uuid.UUID) error {
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msg("failed to create folder model")
 		os.RemoveAll(fullPath)
-		return errsvc.ErrGenFolderFailed
+		return errsvc.FldErr.CreateFailed
 	}
 
 	_, err = f.FldRepo.InsertFolderAccess(folder_model.FolderAccessModel{
@@ -77,9 +76,8 @@ func (f *FolderService) CreateFolder(fldName string, usrID uuid.UUID) error {
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msg("failed to insert folder access")
 		os.RemoveAll(fullPath)
-		return errsvc.ErrGenFolderFailed
+		return errsvc.FldErr.CreateFailed
 	}
 
 	log.Debug().
@@ -92,31 +90,24 @@ func (f *FolderService) CreateFolder(fldName string, usrID uuid.UUID) error {
 func (f *FolderService) DelFld(fldName string) error {
 	fldModel, err := f.FldRepo.GetFldByName(fldName)
 
-	if err != nil {
-		log.Error().Err(err).Msg("failed to get folder")
-		return errsvc.ErrFldNotFound
-	}
-
-	if fldModel == nil {
-		return errsvc.ErrFldNotFound
+	if err != nil || fldModel == nil {
+		return errsvc.FldErr.NotFound
 	}
 
 	if fldModel.MainFldId == nil {
-		return errsvc.ErrCantDelMainFld
-	}
-
-	err = os.RemoveAll(filepath.Join(f.StoragePath, fldName))
-
-	if err != nil {
-		log.Error().Err(err).Msg("failed to delete folder")
-		return errsvc.ErrFldDeleteFailed
+		return errsvc.FldErr.CantDelMainFld
 	}
 
 	err = f.FldRepo.DelFld(fldModel.ID)
 
 	if err != nil {
-		log.Error().Err(err).Msg("failed to delete folder")
-		return errsvc.ErrFldDeleteFailed
+		return errsvc.FldErr.DelFailed
+	}
+
+	err = os.RemoveAll(filepath.Join(f.StoragePath, fldName))
+
+	if err != nil {
+		return errsvc.FldErr.DelFailed
 	}
 
 	return nil

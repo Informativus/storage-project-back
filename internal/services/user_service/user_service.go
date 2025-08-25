@@ -39,7 +39,7 @@ func (u *UserService) CreateUser(usrName string, connUsrToFld bool) (string, err
 	folderExt := u.FolderService.FolderExist(usrName)
 
 	if folderExt {
-		return "", errsvc.ErrFolderExist
+		return "", errsvc.UsrErr.AlreadyExists
 	}
 
 	usrID := uuid.New()
@@ -62,8 +62,7 @@ func (u *UserService) CreateUser(usrName string, connUsrToFld bool) (string, err
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msg("failed to create user")
-		return "", err
+		return "", errsvc.UsrErr.Internal
 	}
 
 	usrAccessModel, err := u.UserRepo.InsertUserToken(user_model.UserTokensModel{
@@ -92,23 +91,25 @@ func (u *UserService) DelUser(id uuid.UUID) error {
 	usr, err := u.UserRepo.GetUserById(id)
 
 	if err != nil {
-		log.Error().Err(err).Msg("failed to get user")
-		return err
+		return errsvc.UsrErr.BadReq
 	}
 
 	if usr == nil {
-		return errsvc.ErrUsrNotFound
+		return errsvc.UsrErr.NotFound
 	}
 
-	return u.UserRepo.DelUser(id)
+	if err := u.UserRepo.DelUser(id); err != nil {
+		return errsvc.UsrErr.Internal
+	}
+
+	return nil
 }
 
 func (u *UserService) generateToken(payload jwt_service.JwtPayload) (string, error) {
 	token, err := u.jwt.GenerateToken(payload)
 
 	if err != nil {
-		log.Error().Err(err).Msg("failed to sign token")
-		return "", err
+		return "", errsvc.UsrErr.GenerateToken
 	}
 
 	return token, nil
@@ -120,7 +121,7 @@ func (u *UserService) rollbackUser(id uuid.UUID, logMsg string, err error) error
 	if delErr := u.DelUser(id); delErr != nil {
 		log.Error().Err(delErr).Str("user_id", id.String()).
 			Msg("rollback failed, inconsistent state: manual cleanup required")
-		return errsvc.ErrInconsistentState
+		return errsvc.UsrErr.InconsistentState
 	}
 	return err
 }

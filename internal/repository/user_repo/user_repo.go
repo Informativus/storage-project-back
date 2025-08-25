@@ -3,7 +3,6 @@ package user_repo
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/ivan/storage-project-back/internal/models/user_model"
@@ -79,12 +78,10 @@ func (ur *UserRepo) DelUser(id uuid.UUID) error {
 	tag, err := ur.db.Exec(context.Background(), query, id)
 
 	if err != nil {
-		log.Error().Err(err).Msg("failed to delete user")
 		return err
 	}
 
 	if tag.RowsAffected() == 0 {
-		log.Error().Msg(fmt.Sprintf("failed to delete user with id %s", id.String()))
 		return errors.New("failed_delete")
 	}
 
@@ -121,4 +118,52 @@ func (ur *UserRepo) GetUserById(id uuid.UUID) (*user_model.UserModel, error) {
 
 	return &selected, nil
 
+}
+
+func (ur *UserRepo) GetUserAccessById(id uuid.UUID) (*user_model.UserTokensModel, error) {
+	cols, err := sql_builder.SelectArgs(user_model.UserTokensModel{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	where := "user_id = $1"
+	query := sql_builder.BuildSelectQuery(user_model.TokenTableName, cols, &where)
+
+	selected := user_model.UserTokensModel{}
+
+	err = ur.db.QueryRow(context.Background(), query, id).Scan(
+		&selected.ID,
+		&selected.UserID,
+		&selected.Token,
+		&selected.Revoked,
+		&selected.CreatedAt,
+		&selected.ExpiresAt,
+	)
+
+	if err != nil && ur.db.IsErrNoRows(err) {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &selected, nil
+}
+
+func (ur *UserRepo) DelExpiredTokens() error {
+	query := sql_builder.BuildDeleteQuery(user_model.TokenTableName, "expires_at < now()")
+
+	tag, err := ur.db.Exec(context.Background(), query)
+
+	if err != nil {
+		log.Error().Err(err).Msg("failed to delete expired tokens")
+		return err
+	}
+
+	if tag.RowsAffected() == 0 {
+		log.Error().Msg("failed to delete expired tokens")
+		return errors.New("failed_delete")
+	}
+
+	return nil
 }

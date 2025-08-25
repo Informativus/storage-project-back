@@ -7,18 +7,15 @@ import (
 	"github.com/ivan/storage-project-back/internal/controllers/dtos/fld_dto"
 	"github.com/ivan/storage-project-back/internal/services"
 	"github.com/ivan/storage-project-back/internal/services/folder_service"
-	"github.com/ivan/storage-project-back/pkg/errsvc"
 )
 
 type FldController struct {
 	fldService *folder_service.FolderService
-	err        *errsvc.ErrorService
 }
 
-func NewFldController(services *services.Services, err *errsvc.ErrorService) *FldController {
+func NewFldController(services *services.Services) *FldController {
 	return &FldController{
 		fldService: services.FolderService,
-		err:        err,
 	}
 }
 
@@ -37,8 +34,7 @@ func (fc *FldController) DelFld(c *gin.Context) {
 	err := fc.fldService.DelFld(dto.Name)
 
 	if err != nil {
-		httpErr := fc.err.MapError(err)
-		c.JSON(httpErr.Code, gin.H{"error": httpErr.Message})
+		c.Error(err)
 		return
 	}
 

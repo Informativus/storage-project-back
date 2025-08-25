@@ -2,14 +2,11 @@ package folder_repo
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/ivan/storage-project-back/internal/models/folder_model"
 	"github.com/ivan/storage-project-back/internal/utils/sql_builder"
 	"github.com/ivan/storage-project-back/pkg/database/database"
-	"github.com/rs/zerolog/log"
 )
 
 type FldRepo struct {
@@ -145,8 +142,7 @@ func (f *FldRepo) DelFld(id uuid.UUID) error {
 	}
 
 	if tag.RowsAffected() == 0 {
-		log.Error().Msg(fmt.Sprintf("failed to delete folder with id %s", id.String()))
-		return errors.New("failed_delete")
+		return err
 	}
 
 	return nil

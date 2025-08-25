@@ -8,18 +8,15 @@ import (
 	"github.com/ivan/storage-project-back/internal/models/user_model"
 	"github.com/ivan/storage-project-back/internal/services"
 	"github.com/ivan/storage-project-back/internal/services/user_service"
-	"github.com/ivan/storage-project-back/pkg/errsvc"
 )
 
 type UserController struct {
-	UserService  *user_service.UserService
-	ErrorService *errsvc.ErrorService
+	UserService *user_service.UserService
 }
 
-func NewUserController(services *services.Services, err *errsvc.ErrorService) *UserController {
+func NewUserController(services *services.Services) *UserController {
 	return &UserController{
-		UserService:  services.UserService,
-		ErrorService: err,
+		UserService: services.UserService,
 	}
 }
 
@@ -44,8 +41,7 @@ func (uc *UserController) CreateUser(c *gin.Context) {
 	token, err := uc.UserService.CreateUser(dto.UrsName, connUsrToFld)
 
 	if err != nil {
-		httpErr := uc.ErrorService.MapError(err)
-		c.JSON(httpErr.Code, gin.H{"error": httpErr.Message})
+		c.Error(err)
 		return
 	}
 
@@ -63,10 +59,9 @@ func (uc *UserController) CreateUser(c *gin.Context) {
 func (uc *UserController) DltUser(c *gin.Context) {
 	usrDTO := c.MustGet("usrDTO").(*user_model.UserModel)
 	err := uc.UserService.DelUser(usrDTO.ID)
-	if err != nil {
 
-		httpErr := uc.ErrorService.MapError(err)
-		c.JSON(httpErr.Code, gin.H{"error": httpErr.Message})
+	if err != nil {
+		c.Error(err)
 		return
 	}
 
