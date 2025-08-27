@@ -4,10 +4,25 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ivan/storage-project-back/pkg/config"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-    "github.com/ivan/storage-project-back/pkg/config"
 )
+
+// @title Storage Project API
+// @version 1.0
+// @description REST API для проекта Storage Project. Позволяет работать с пользователями, папками и файлами.
+// @termsOfService http://example.com/terms/
+
+// @contact.name Ivan Popov
+
+// @host localhost:8080
+// @BasePath /api
+// @schemes http https
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 
 func main() {
 	cfg, err := config.NewConfig()
@@ -16,9 +31,9 @@ func main() {
 		log.Fatal().Err(err).Msg("Error loading .env file")
 	}
 
-	var reg *Registry = NewRegistry(cfg)
-
 	var routers = gin.Default()
+
+	var reg *Registry = NewRegistry(cfg, routers)
 
 	reg.Controllers.RegisterRoutes(routers)
 

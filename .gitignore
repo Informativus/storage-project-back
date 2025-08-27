@@ -1,6 +1,8 @@
 .env
 /uploads
+/docs/
 *.log
 bin/
 EOF
 tmp/
+.DS_Store
