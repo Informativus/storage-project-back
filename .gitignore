@@ -1,4 +1,7 @@
 .env
+/api-info/.obsidian
+/api-info/Templ
+/api-info/Daily
 /uploads
 /docs/
 *.log
