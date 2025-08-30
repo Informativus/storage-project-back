@@ -40,8 +40,9 @@ func (c *Controllers) RegisterRoutes(router *gin.Engine) {
 	{
 		user := api.Group("/user")
 		{
-			user.POST("/create", users_middleware.CreateUserMidd, c.UserController.CreateUser)
-			user.DELETE("/delete", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.User, roles_model.Admin}), c.UserController.DltUser)
+			user.POST("/create", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.Admin}), users_middleware.CreateUserMidd, c.UserController.CreateUser)
+			user.DELETE("/delete", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.Admin}), c.UserController.DltUser)
+			user.POST("/get_token", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.Admin}), users_middleware.GetTokenMidd, c.UserController.GenToken)
 		}
 
 		fld := api.Group("/fld")

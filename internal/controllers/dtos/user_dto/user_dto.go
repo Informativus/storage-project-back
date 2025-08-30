@@ -1,10 +1,18 @@
 package user_dto
 
 type CreateUserDto struct {
-	UrsName       string `json:"usr_name" validate:"required,fld_max,fld_valid"`
-	ConnUserToFld *bool  `json:"conn_user_to_fld"`
+	UsrName       string `json:"usrName" validate:"required,fld_max,fld_valid"`
+	ConnUserToFld *bool  `json:"connUserToFld"`
 }
 
 type CreateUserResponse struct {
+	Token string `json:"token"`
+}
+
+type GenTokenReq struct {
+	UsrName string `json:"usrName" validate:"required,fld_max,fld_valid"`
+}
+
+type GenTokenRes struct {
 	Token string `json:"token"`
 }

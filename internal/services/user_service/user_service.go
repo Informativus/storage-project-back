@@ -48,19 +48,11 @@ func (u *UserService) CreateUser(usrName string, connUsrToFld bool) (string, err
 
 	usrID := uuid.New()
 
-	token, err := u.generateToken(jwt_service.JwtPayload{
-		ID: usrID,
-	})
-
-	if err != nil {
-		return "", err
-	}
-
 	usrModel, err := u.UserRepo.CreateUser(user_model.UserModel{
 		ID:        usrID,
 		Name:      usrName,
 		Blocked:   false,
-		RoleID:    roles_model.User,
+		RoleID:    roles_model.Admin,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	})
@@ -69,14 +61,7 @@ func (u *UserService) CreateUser(usrName string, connUsrToFld bool) (string, err
 		return "", errsvc.UsrErr.Internal.New()
 	}
 
-	usrAccessModel, err := u.UserRepo.InsertUserToken(user_model.UserTokensModel{
-		ID:        uuid.New(),
-		UserID:    usrModel.ID,
-		Token:     token,
-		Revoked:   false,
-		CreatedAt: usrModel.CreatedAt,
-		ExpiresAt: usrModel.CreatedAt.Add(time.Duration(u.cfg.ExpiresIn) * time.Second),
-	})
+	token, err := u.addUserToken(&usrModel)
 
 	if err != nil {
 		return "", u.rollbackUser(usrModel.ID, "failed to create user access token", err)
@@ -88,7 +73,7 @@ func (u *UserService) CreateUser(usrName string, connUsrToFld bool) (string, err
 		return "", u.rollbackUser(usrModel.ID, "failed to create user folder", err)
 	}
 
-	return usrAccessModel.Token, nil
+	return token, nil
 }
 
 func (u *UserService) DelUser(id uuid.UUID) error {
@@ -107,6 +92,45 @@ func (u *UserService) DelUser(id uuid.UUID) error {
 	}
 
 	return nil
+}
+
+func (u *UserService) AddUserTokenByUsrName(usrName string) (string, error) {
+	usrModel, err := u.UserRepo.GetUserByName(usrName)
+
+	if err != nil {
+		return "", errsvc.UsrErr.Internal.New()
+	}
+
+	if usrModel == nil {
+		return "", errsvc.UsrErr.NotFound.New()
+	}
+
+	return u.addUserToken(usrModel)
+}
+
+func (u *UserService) addUserToken(usrModel *user_model.UserModel) (string, error) {
+	token, err := u.generateToken(jwt_service.JwtPayload{
+		ID: usrModel.ID,
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	usrAccessModel, err := u.UserRepo.InsertUserToken(user_model.UserTokensModel{
+		ID:        uuid.New(),
+		UserID:    usrModel.ID,
+		Token:     token,
+		Revoked:   false,
+		CreatedAt: usrModel.CreatedAt,
+		ExpiresAt: usrModel.CreatedAt.Add(time.Duration(u.cfg.ExpiresIn) * time.Second),
+	})
+
+	if err != nil {
+		return "", errsvc.UsrErr.Internal.New()
+	}
+
+	return usrAccessModel.Token, nil
 }
 
 func (u *UserService) generateToken(payload jwt_service.JwtPayload) (string, error) {

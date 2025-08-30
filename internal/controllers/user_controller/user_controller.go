@@ -38,7 +38,7 @@ func (uc *UserController) CreateUser(c *gin.Context) {
 		connUsrToFld = *dto.ConnUserToFld
 	}
 
-	token, err := uc.UserService.CreateUser(dto.UrsName, connUsrToFld)
+	token, err := uc.UserService.CreateUser(dto.UsrName, connUsrToFld)
 
 	if err != nil {
 		c.Error(err)
@@ -66,4 +66,29 @@ func (uc *UserController) DltUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusNoContent, gin.H{})
+}
+
+// @Summary Generate a new token
+// @Description Generates a new token for user.
+// @Tags User
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param user body user_dto.GenTokenReq true "User info"
+// @Success 200 {object} user_dto.GenTokenRes "Successful response"
+// @Success 200 "No Content"
+// @Router /user/get_token [post]
+func (uc *UserController) GenToken(c *gin.Context) {
+	tokenDTO := c.MustGet("tokenDTO").(user_dto.GenTokenReq)
+
+	token, err := uc.UserService.AddUserTokenByUsrName(tokenDTO.UsrName)
+
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"token": token,
+	})
 }
