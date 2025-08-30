@@ -4,8 +4,8 @@ tmp_dir = "tmp"
 [build]
 cmd = "swag init -g cmd/server/main.go -o docs && go build -o ./tmp/server ./cmd/server"
 bin = "./tmp/server"
-include_dir = ["internal/controllers", "cmd/server"]
 include_ext = ["go"]
+exclude_dir = ["docs/"]
 
 [log]
 time = true

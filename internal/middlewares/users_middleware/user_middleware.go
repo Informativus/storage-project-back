@@ -26,10 +26,35 @@ func CreateUserMidd(c *gin.Context) {
 	}
 
 	userDTO := user_dto.CreateUserDto{
-		UrsName: dto.UrsName,
+		UsrName: dto.UsrName,
 	}
 
-	c.Set("userDTO", userDTO)
+	c.Set("createUserDTO", userDTO)
+
+	c.Next()
+}
+
+func GetTokenMidd(c *gin.Context) {
+	var dto user_dto.GenTokenReq
+
+	if err := c.ShouldBindJSON(&dto); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Request should be JSON"})
+		c.Abort()
+		return
+	}
+
+	if err := validation.Validate.Struct(dto); err != nil {
+		log.Error().Err(err).Msg("failed to validate request")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to validate request"})
+		c.Abort()
+		return
+	}
+
+	tokenDTO := user_dto.GenTokenReq{
+		UsrName: dto.UsrName,
+	}
+
+	c.Set("tokenDTO", tokenDTO)
 
 	c.Next()
 }

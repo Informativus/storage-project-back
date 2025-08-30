@@ -28,6 +28,7 @@ func (ur *UserRepo) CreateUser(user user_model.UserModel) (user_model.UserModel,
 	}
 
 	query := sql_builder.BuildInsertQuery(user_model.TableName, cols, phs)
+	log.Debug().Msg(query)
 
 	var inserted user_model.UserModel
 	err = ur.db.QueryRow(context.Background(), query, vals...).Scan(
@@ -120,19 +121,51 @@ func (ur *UserRepo) GetUserById(id uuid.UUID) (*user_model.UserModel, error) {
 
 }
 
-func (ur *UserRepo) GetUserAccessById(id uuid.UUID) (*user_model.UserTokensModel, error) {
+func (ur *UserRepo) GetUserByName(name string) (*user_model.UserModel, error) {
+	cols, err := sql_builder.SelectArgs(user_model.UserModel{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	where := "name = $1"
+
+	query := sql_builder.BuildSelectQuery(user_model.TableName, cols, &where)
+
+	selected := user_model.UserModel{}
+
+	err = ur.db.QueryRow(context.Background(), query, name).Scan(
+		&selected.ID,
+		&selected.Name,
+		&selected.Blocked,
+		&selected.RoleID,
+		&selected.CreatedAt,
+		&selected.UpdatedAt,
+	)
+
+	if err != nil && ur.db.IsErrNoRows(err) {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &selected, nil
+
+}
+
+func (ur *UserRepo) GetUserAccessByToken(token string) (*user_model.UserTokensModel, error) {
 	cols, err := sql_builder.SelectArgs(user_model.UserTokensModel{})
 
 	if err != nil {
 		return nil, err
 	}
 
-	where := "user_id = $1"
+	where := "token = $1"
 	query := sql_builder.BuildSelectQuery(user_model.TokenTableName, cols, &where)
 
 	selected := user_model.UserTokensModel{}
 
-	err = ur.db.QueryRow(context.Background(), query, id).Scan(
+	err = ur.db.QueryRow(context.Background(), query, token).Scan(
 		&selected.ID,
 		&selected.UserID,
 		&selected.Token,

@@ -7,10 +7,9 @@ import (
 )
 
 const (
-	TableName              = "folders"
-	MainUserFolderViewName = "main_user_folder"
-	FolderNameLen          = 255
-	PathLen                = 512
+	TableName     = "folders"
+	FolderNameLen = 255
+	PathLen       = 512
 )
 
 type FolderModel struct {

@@ -56,7 +56,7 @@ func AuthGuard(jwt *jwt_service.JwtService, usrRepo *user_repo.UserRepo, accessR
 			return
 		}
 
-		usrAccess, err := usrRepo.GetUserAccessById(usr.ID)
+		usrAccess, err := usrRepo.GetUserAccessByToken(token)
 
 		if err != nil || usrAccess == nil {
 			log.Error().Err(err).Msg("failed to get user access")

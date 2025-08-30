@@ -13,15 +13,15 @@ func InsertArgs[T any](model T) (cols []string, vals []any, placeholders []strin
 	val := reflect.ValueOf(model)
 	typ := reflect.TypeOf(model)
 
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+		typ = typ.Elem()
+	}
+
 	if val.Kind() != reflect.Struct {
 		err = errors.New("model must be a struct")
 		log.Error().Msg(err.Error())
 		return nil, nil, nil, err
-	}
-
-	if val.Kind() == reflect.Ptr {
-		val = val.Elem()
-		typ = typ.Elem()
 	}
 
 	for i := 0; i < val.NumField(); i++ {
@@ -46,10 +46,11 @@ func InsertArgs[T any](model T) (cols []string, vals []any, placeholders []strin
 }
 
 func BuildInsertQuery(table string, cols []string, placeholders []string) string {
-	return fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) RETURNING *",
+	return fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) RETURNING %s",
 		table,
 		strings.Join(cols, ", "),
 		strings.Join(placeholders, ", "),
+		strings.Join(cols, ", "),
 	)
 }
 
@@ -80,16 +81,38 @@ func SelectArgs[T any](model T) (cols []string, err error) {
 }
 
 func BuildSelectQuery(table string, cols []string, whereExpression *string) string {
+	var query string
 	if whereExpression == nil {
-		return fmt.Sprintf("SELECT %s FROM %s",
+		query = fmt.Sprintf("SELECT %s FROM %s",
 			strings.Join(cols, ", "),
 			table,
 		)
+		log.Debug().Msg(query)
+		return query
 	}
 
-	return fmt.Sprintf("SELECT %s FROM %s WHERE %s",
+	query = fmt.Sprintf("SELECT %s FROM %s WHERE %s",
 		strings.Join(cols, ", "),
 		table,
+		*whereExpression,
+	)
+	log.Debug().Msg(query)
+	return query
+}
+
+func BuildSelectJoinQuery(table string, cols []string, joinExpression string, whereExpression *string) string {
+	if whereExpression == nil {
+		return fmt.Sprintf("SELECT %s FROM %s JOIN %s",
+			strings.Join(cols, ", "),
+			table,
+			joinExpression,
+		)
+	}
+
+	return fmt.Sprintf("SELECT %s FROM %s JOIN %s WHERE %s",
+		strings.Join(cols, ", "),
+		table,
+		joinExpression,
 		*whereExpression,
 	)
 }
