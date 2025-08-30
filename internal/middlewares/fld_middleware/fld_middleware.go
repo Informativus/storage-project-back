@@ -26,3 +26,24 @@ func DelFld(c *gin.Context) {
 
 	c.Next()
 }
+
+func CreateFld(c *gin.Context) {
+	var dto fld_dto.CreateFldReq
+
+	if err := c.ShouldBindJSON(&dto); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Request should be JSON"})
+		c.Abort()
+		return
+	}
+
+	if err := validation.Validate.Struct(dto); err != nil {
+		log.Error().Err(err).Msg("failed to validate request")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to validate request"})
+		c.Abort()
+		return
+	}
+
+	c.Set("createDTO", dto)
+
+	c.Next()
+}

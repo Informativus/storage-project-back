@@ -28,6 +28,7 @@ func (ur *UserRepo) CreateUser(user user_model.UserModel) (user_model.UserModel,
 	}
 
 	query := sql_builder.BuildInsertQuery(user_model.TableName, cols, phs)
+	log.Debug().Msg(query)
 
 	var inserted user_model.UserModel
 	err = ur.db.QueryRow(context.Background(), query, vals...).Scan(

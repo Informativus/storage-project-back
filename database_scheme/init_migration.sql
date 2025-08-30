@@ -1,4 +1,4 @@
-create table roles (id serial primary key, name varchar(32) not null, note varchar(512));
+CREATE TABLE ROLES (ID SERIAL PRIMARY KEY, NAME VARCHAR(32) NOT NULL, NOTE VARCHAR(512));
 
 create table users (
     id uuid primary key,
@@ -46,4 +46,4 @@ CREATE TABLE folder_access (
     PRIMARY KEY (folder_id, user_id)
 );
 
-CREATE VIEW MAIN_USER_FOLDER AS SELECT * FROM FOLDERS WHERE MAIN_FOLDER_ID IS NULL;
+CREATE VIEW MAIN_USER_FOLDER AS SELECT FA.USER_ID, F.ID AS FOLDER_ID, F.NAME FROM FOLDERS F JOIN FOLDER_ACCESS FA ON F.ID = FA.FOLDER_ID WHERE F.MAIN_FOLDER_ID IS NULL;

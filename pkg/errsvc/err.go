@@ -3,39 +3,69 @@ package errsvc
 import (
 	"fmt"
 	"runtime"
+	"strings"
 )
+
+type AppErrorTemplate struct {
+	Key     string
+	Message string
+	Code    int
+}
+
+func (t AppErrorTemplate) New() *AppError {
+	return &AppError{
+		Key:     t.Key,
+		Message: t.Message,
+		Code:    t.Code,
+		trace:   captureStack(3),
+	}
+}
 
 var (
 	UsrErr = struct {
-		NotFound          *AppError
-		BadReq            *AppError
-		AlreadyExists     *AppError
-		GenerateToken     *AppError
-		InconsistentState *AppError
-		Internal          *AppError
+		NotFound          AppErrorTemplate
+		BadReq            AppErrorTemplate
+		AlreadyExists     AppErrorTemplate
+		GenerateToken     AppErrorTemplate
+		Forbidden         AppErrorTemplate
+		InconsistentState AppErrorTemplate
+		Internal          AppErrorTemplate
 	}{
-		NotFound:          NewAppError("user_not_found", "user not found", 404),
-		BadReq:            NewAppError("bad_request", "bad request", 400),
-		AlreadyExists:     NewAppError("user_already_exists", "user already exists", 400),
-		InconsistentState: NewAppError("inconsistent_state", "inconsistent state", 500),
-		GenerateToken:     NewAppError("token_generate_failed", "internal server error", 500),
-		Internal:          NewAppError("internal", "internal server error", 500),
+		NotFound:          AppErrorTemplate{"user_not_found", "user not found", 404},
+		BadReq:            AppErrorTemplate{"bad_request", "bad request", 400},
+		AlreadyExists:     AppErrorTemplate{"user_already_exists", "user already exists", 400},
+		GenerateToken:     AppErrorTemplate{"token_generate_failed", "internal server error", 500},
+		Forbidden:         AppErrorTemplate{"forbidden", "forbidden", 403},
+		InconsistentState: AppErrorTemplate{"inconsistent_state", "inconsistent state", 500},
+		Internal:          AppErrorTemplate{"internal", "internal server error", 500},
 	}
 
 	FldErr = struct {
-		NotFound       *AppError
-		BadReq         *AppError
-		CantDelMainFld *AppError
-		CreateFailed   *AppError
-		DelFailed      *AppError
-		AlreadyExists  *AppError
+		NotFound       AppErrorTemplate
+		BadReq         AppErrorTemplate
+		CantDelMainFld AppErrorTemplate
+		CreateFailed   AppErrorTemplate
+		DelFailed      AppErrorTemplate
+		AlreadyExists  AppErrorTemplate
+		Internal       AppErrorTemplate
 	}{
-		NotFound:       NewAppError("folder_not_found", "folder not found", 404),
-		BadReq:         NewAppError("bad_request", "bad request", 400),
-		CreateFailed:   NewAppError("folder_create_failed", "folder create failed", 500),
-		CantDelMainFld: NewAppError("cannot_delete_main_folder", "cannot delete main folder", 400),
-		DelFailed:      NewAppError("folder_delete_failed", "folder delete failed", 500),
-		AlreadyExists:  NewAppError("folder_already_exists", "folder already exists", 400),
+		NotFound:       AppErrorTemplate{"folder_not_found", "folder not found", 404},
+		BadReq:         AppErrorTemplate{"bad_request", "bad request", 400},
+		CreateFailed:   AppErrorTemplate{"folder_create_failed", "folder create failed", 500},
+		CantDelMainFld: AppErrorTemplate{"cannot_delete_main_folder", "cannot delete main folder", 400},
+		DelFailed:      AppErrorTemplate{"folder_delete_failed", "folder delete failed", 500},
+		AlreadyExists:  AppErrorTemplate{"folder_already_exists", "folder already exists", 400},
+		Internal:       AppErrorTemplate{"internal", "internal server error", 500},
+	}
+
+	SecurityErr = struct {
+		NotFound      AppErrorTemplate
+		AlreadyExists AppErrorTemplate
+		Internal      AppErrorTemplate
+	}{
+		NotFound:      AppErrorTemplate{"folder_not_found", "folder not found", 404},
+		AlreadyExists: AppErrorTemplate{"folder_already_exists", "folder already exists", 400},
+		Internal:      AppErrorTemplate{"internal", "internal server error", 500},
 	}
 )
 
@@ -64,19 +94,22 @@ func NewAppError(key, msg string, code int) *AppError {
 }
 
 func captureStack(skip int) string {
-	pc := make([]uintptr, 15)
+	pc := make([]uintptr, 50)
 	n := runtime.Callers(skip, pc)
-
 	frames := runtime.CallersFrames(pc[:n])
-	var stack string
 
+	var b strings.Builder
 	for {
 		frame, more := frames.Next()
-		stack += fmt.Sprintf("%s\n\t%s:%d\n", frame.Function, frame.File, frame.Line)
+		b.WriteString(frame.Function)
+		b.WriteString("\n\t")
+		b.WriteString(frame.File)
+		b.WriteString(":")
+		b.WriteString(fmt.Sprint(frame.Line))
+		b.WriteString("\n")
 		if !more {
 			break
 		}
 	}
-
-	return stack
+	return b.String()
 }

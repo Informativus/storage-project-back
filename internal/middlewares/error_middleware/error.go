@@ -15,7 +15,11 @@ func ErrorHandler(c *gin.Context) {
 		err := c.Errors.Last().Err
 
 		if appErr, ok := err.(*errsvc.AppError); ok {
-			log.Error().Str("trace", appErr.Trace()).Msg(appErr.Error())
+			log.Error().
+				Int("code", appErr.Code).
+				Str("key", appErr.Key).
+				Str("message", appErr.Message).
+				Msg("\n" + appErr.Trace())
 
 			c.JSON(appErr.Code, gin.H{
 				"error":   appErr.Key,

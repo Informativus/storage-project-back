@@ -30,7 +30,7 @@ func NewUserController(services *services.Services) *UserController {
 // @Success 200 {object} user_dto.CreateUserResponse "Successful response"
 // @Router /user/create [post]
 func (uc *UserController) CreateUser(c *gin.Context) {
-	dto := c.MustGet("userDTO").(user_dto.CreateUserDto)
+	dto := c.MustGet("createUserDTO").(user_dto.CreateUserDto)
 
 	connUsrToFld := false
 

@@ -36,10 +36,14 @@ func NewUserService(
 }
 
 func (u *UserService) CreateUser(usrName string, connUsrToFld bool) (string, error) {
-	folderExt := u.FolderService.FolderExist(usrName)
+	folderExt, err := u.FolderService.MainFolderExist(usrName)
+
+	if err != nil {
+		return "", errsvc.UsrErr.Internal.New()
+	}
 
 	if folderExt {
-		return "", errsvc.UsrErr.AlreadyExists
+		return "", errsvc.UsrErr.AlreadyExists.New()
 	}
 
 	usrID := uuid.New()
@@ -62,7 +66,7 @@ func (u *UserService) CreateUser(usrName string, connUsrToFld bool) (string, err
 	})
 
 	if err != nil {
-		return "", errsvc.UsrErr.Internal
+		return "", errsvc.UsrErr.Internal.New()
 	}
 
 	usrAccessModel, err := u.UserRepo.InsertUserToken(user_model.UserTokensModel{
@@ -78,7 +82,7 @@ func (u *UserService) CreateUser(usrName string, connUsrToFld bool) (string, err
 		return "", u.rollbackUser(usrModel.ID, "failed to create user access token", err)
 	}
 
-	err = u.FolderService.CreateFolder(usrName, usrModel.ID)
+	err = u.FolderService.CreateFolder(usrName, &usrModel)
 
 	if err != nil {
 		return "", u.rollbackUser(usrModel.ID, "failed to create user folder", err)
@@ -91,15 +95,15 @@ func (u *UserService) DelUser(id uuid.UUID) error {
 	usr, err := u.UserRepo.GetUserById(id)
 
 	if err != nil {
-		return errsvc.UsrErr.BadReq
+		return errsvc.UsrErr.BadReq.New()
 	}
 
 	if usr == nil {
-		return errsvc.UsrErr.NotFound
+		return errsvc.UsrErr.NotFound.New()
 	}
 
 	if err := u.UserRepo.DelUser(id); err != nil {
-		return errsvc.UsrErr.Internal
+		return errsvc.UsrErr.Internal.New()
 	}
 
 	return nil
@@ -109,7 +113,7 @@ func (u *UserService) generateToken(payload jwt_service.JwtPayload) (string, err
 	token, err := u.jwt.GenerateToken(payload)
 
 	if err != nil {
-		return "", errsvc.UsrErr.GenerateToken
+		return "", errsvc.UsrErr.GenerateToken.New()
 	}
 
 	return token, nil
@@ -121,7 +125,7 @@ func (u *UserService) rollbackUser(id uuid.UUID, logMsg string, err error) error
 	if delErr := u.DelUser(id); delErr != nil {
 		log.Error().Err(delErr).Str("user_id", id.String()).
 			Msg("rollback failed, inconsistent state: manual cleanup required")
-		return errsvc.UsrErr.InconsistentState
+		return errsvc.UsrErr.InconsistentState.New()
 	}
 	return err
 }

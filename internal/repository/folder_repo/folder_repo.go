@@ -9,6 +9,17 @@ import (
 	"github.com/ivan/storage-project-back/pkg/database/database"
 )
 
+type IFldRepo interface {
+	CreateFld(fldModel *folder_model.FolderModel) (*folder_model.FolderModel, error)
+	InsertFolderAccess(fldAccessModel folder_model.FolderAccessModel) (folder_model.FolderAccessModel, error)
+	GetGeneralFolderByName(fldName string) (*folder_model.MainFolderModel, error)
+	GetGeneralFolderById(fldID uuid.UUID) (*folder_model.MainFolderModel, error)
+	GetGeneralFolderByUsrId(id uuid.UUID) (*folder_model.MainFolderModel, error)
+	GetGeneralFolderByFldId(id uuid.UUID) (*folder_model.MainFolderModel, error)
+	GetFldByNameAndMainFldId(fldName string, mainID uuid.UUID) (*folder_model.FolderModel, error)
+	DelFld(id uuid.UUID) error
+}
+
 type FldRepo struct {
 	db database.DBClient
 }
@@ -19,11 +30,11 @@ func NewFldRepo(db database.DBClient) *FldRepo {
 	}
 }
 
-func (f *FldRepo) CreateFld(fldModel folder_model.FolderModel) (folder_model.FolderModel, error) {
+func (f *FldRepo) CreateFld(fldModel *folder_model.FolderModel) (*folder_model.FolderModel, error) {
 	cals, vals, phs, err := sql_builder.InsertArgs(fldModel)
 
 	if err != nil {
-		return fldModel, err
+		return nil, err
 	}
 
 	query := sql_builder.BuildInsertQuery(folder_model.TableName, cals, phs)
@@ -44,7 +55,7 @@ func (f *FldRepo) CreateFld(fldModel folder_model.FolderModel) (folder_model.Fol
 		return fldModel, err
 	}
 
-	return inserted, nil
+	return &inserted, nil
 }
 
 func (f *FldRepo) InsertFolderAccess(fldAccessModel folder_model.FolderAccessModel) (folder_model.FolderAccessModel, error) {
@@ -71,8 +82,8 @@ func (f *FldRepo) InsertFolderAccess(fldAccessModel folder_model.FolderAccessMod
 	return inserted, nil
 }
 
-func (f *FldRepo) GetGeneralFolderByName(fldName string) (*folder_model.FolderModel, error) {
-	cals, err := sql_builder.SelectArgs(folder_model.FolderModel{})
+func (f *FldRepo) GetGeneralFolderByName(fldName string) (*folder_model.MainFolderModel, error) {
+	cals, err := sql_builder.SelectArgs(folder_model.MainFolderModel{})
 
 	if err != nil {
 		return nil, err
@@ -82,8 +93,35 @@ func (f *FldRepo) GetGeneralFolderByName(fldName string) (*folder_model.FolderMo
 
 	query := sql_builder.BuildSelectQuery(folder_model.MainUserFolderViewName, cals, &where)
 
-	var selected folder_model.FolderModel
+	var selected folder_model.MainFolderModel
 	err = f.db.QueryRow(context.Background(), query, fldName).Scan(
+		&selected.UserID,
+		&selected.FolderID,
+		&selected.Name,
+	)
+
+	if err != nil && f.db.IsErrNoRows(err) {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &selected, nil
+}
+
+func (f *FldRepo) GetGeneralFolderById(fldID uuid.UUID) (*folder_model.FolderModel, error) {
+	cals, err := sql_builder.SelectArgs(folder_model.FolderModel{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	where := "id = $1"
+
+	query := sql_builder.BuildSelectQuery(folder_model.TableName, cals, &where)
+
+	var selected folder_model.FolderModel
+	err = f.db.QueryRow(context.Background(), query, fldID).Scan(
 		&selected.ID,
 		&selected.Name,
 		&selected.ParentID,
@@ -102,19 +140,77 @@ func (f *FldRepo) GetGeneralFolderByName(fldName string) (*folder_model.FolderMo
 	return &selected, nil
 }
 
-func (f *FldRepo) GetFldByName(fldName string) (*folder_model.FolderModel, error) {
+func (f *FldRepo) GetGeneralFolderByUsrId(id uuid.UUID) (*folder_model.MainFolderModel, error) {
+	cals, err := sql_builder.SelectArgs(folder_model.MainFolderModel{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	where := "user_id = $1"
+
+	query := sql_builder.BuildSelectQuery(folder_model.MainUserFolderViewName, cals, &where)
+
+	var selected folder_model.MainFolderModel
+	err = f.db.QueryRow(context.Background(), query, id).Scan(
+		&selected.UserID,
+		&selected.FolderID,
+		&selected.Name,
+	)
+
+	if err != nil && f.db.IsErrNoRows(err) {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &selected, nil
+}
+
+func (f *FldRepo) GetGeneralFolderBySubFldId(id uuid.UUID) (*folder_model.FolderModel, error) {
 	cals, err := sql_builder.SelectArgs(folder_model.FolderModel{})
 
 	if err != nil {
 		return nil, err
 	}
 
-	where := "name = $1"
+	where := "id = (select main_folder_id from folders where id = $1)"
 
 	query := sql_builder.BuildSelectQuery(folder_model.TableName, cals, &where)
 
 	selected := folder_model.FolderModel{}
-	err = f.db.QueryRow(context.Background(), query, fldName).Scan(
+	err = f.db.QueryRow(context.Background(), query, id).Scan(
+		&selected.ID,
+		&selected.Name,
+		&selected.ParentID,
+		&selected.OwnerID,
+		&selected.MainFldId,
+		&selected.CreatedAt,
+		&selected.UpdatedAt,
+	)
+
+	if err != nil && f.db.IsErrNoRows(err) {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &selected, nil
+}
+
+func (f *FldRepo) GetFldByNameAndMainFldId(fldName string, mainID uuid.UUID) (*folder_model.FolderModel, error) {
+	cals, err := sql_builder.SelectArgs(folder_model.FolderModel{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	where := "name = $1 and main_folder_id = $2"
+
+	query := sql_builder.BuildSelectQuery(folder_model.TableName, cals, &where)
+
+	selected := folder_model.FolderModel{}
+	err = f.db.QueryRow(context.Background(), query, fldName, mainID).Scan(
 		&selected.ID,
 		&selected.Name,
 		&selected.ParentID,

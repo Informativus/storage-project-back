@@ -29,7 +29,7 @@ func CreateUserMidd(c *gin.Context) {
 		UrsName: dto.UrsName,
 	}
 
-	c.Set("userDTO", userDTO)
+	c.Set("createUserDTO", userDTO)
 
 	c.Next()
 }
