@@ -14,45 +14,59 @@ var Validate *validator.Validate
 func init() {
 	Validate = validator.New()
 
-	_ = Validate.RegisterValidation("token_max", func(fl validator.FieldLevel) bool {
+	registerUserValidations(Validate)
+	registerFolderValidations(Validate)
+	registerFileValidations(Validate)
+}
+
+func registerUserValidations(v *validator.Validate) {
+	_ = v.RegisterValidation("token_max", func(fl validator.FieldLevel) bool {
 		return len(fl.Field().String()) <= user_model.TokenLen
 	})
+}
 
-	_ = Validate.RegisterValidation("fld_max", func(fl validator.FieldLevel) bool {
+func registerFolderValidations(v *validator.Validate) {
+	_ = v.RegisterValidation("fld_max", func(fl validator.FieldLevel) bool {
 		return len(fl.Field().String()) <= folder_model.FolderNameLen
 	})
 
-	_ = Validate.RegisterValidation("fld_valid", func(fl validator.FieldLevel) bool {
+	_ = v.RegisterValidation("fld_valid", func(fl validator.FieldLevel) bool {
 		return !strings.ContainsAny(fl.Field().String(), `/\:*?"<>|`)
 	})
+}
 
-	_ = Validate.RegisterValidation("file_name_valid", func(fl validator.FieldLevel) bool {
-		name := fl.Field().String()
+func registerFileValidations(v *validator.Validate) {
+	_ = v.RegisterValidation("file_name_valid", validateFileName)
+	_ = v.RegisterValidation("file_name_max", validateFileNameMax)
+	_ = v.RegisterValidation("file_name_min", validateFileNameMin)
+}
 
-		if strings.TrimSpace(name) == "" {
-			return false
-		}
+func validateFileName(fl validator.FieldLevel) bool {
+	name := fl.Field().String()
 
-		if strings.ContainsAny(name, `/\:*?"<>|`) {
-			return false
-		}
+	if strings.TrimSpace(name) == "" {
+		return false
+	}
 
-		if name == "." || name == ".." {
-			return false
-		}
+	if strings.ContainsAny(name, `/\:*?"<>|`) {
+		return false
+	}
 
-		if strings.HasSuffix(name, ".") || strings.HasSuffix(name, " ") {
-			return false
-		}
+	if name == "." || name == ".." {
+		return false
+	}
 
-		return true
-	})
+	if strings.HasSuffix(name, ".") || strings.HasSuffix(name, " ") {
+		return false
+	}
 
-	_ = Validate.RegisterValidation("file_name_max", func(fl validator.FieldLevel) bool {
-		return len(fl.Field().String()) <= file_model.MaxFileNameLen
-	})
+	return true
+}
 
-	_ = Validate.RegisterValidation("file_name_min", func(fl validator.FieldLevel) bool {
-		return len(fl.Field().String()) >= file_model.MinFileNameLen
-	})
+func validateFileNameMax(fl validator.FieldLevel) bool {
+	return len(fl.Field().String()) <= file_model.MaxFileNameLen
+}
+
+func validateFileNameMin(fl validator.FieldLevel) bool {
+	return len(fl.Field().String()) >= file_model.MinFileNameLen
 }
