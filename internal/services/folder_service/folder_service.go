@@ -20,10 +20,42 @@ const (
 	folderPermissionRWXRXRX os.FileMode = 0755
 )
 
+type IFolderService interface {
+	MainFolderExist(fldName string) (bool, error)
+	CreateFolder(fldName string, usrModel *user_model.UserModel) error
+	DelFld(fldName string, usrID uuid.UUID) error
+	CreateSubFld(fldName string, parentID uuid.UUID, usrModel *user_model.UserModel) (*uuid.UUID, error)
+	GetGeneralFolderByFldId(fldId uuid.UUID) (folder_model.FolderModel, error)
+}
+
 type FolderService struct {
 	StoragePath string
 	FldRepo     *folder_repo.FldRepo
 	Security    *security_service.SecurityService
+}
+
+func (f *FolderService) GetGeneralFolderByFldId(subFldId uuid.UUID) (*folder_model.FolderModel, error) {
+	isMainFld, mainFldModel, err := f.isMainFld(subFldId)
+
+	if err != nil {
+		return nil, errsvc.FldErr.BadReq.New(err)
+	}
+
+	if isMainFld {
+		return mainFldModel, nil
+	}
+
+	fldModel, err := f.FldRepo.GetGeneralFolderBySubFldId(subFldId)
+
+	if err != nil {
+		return nil, errsvc.FldErr.Internal.New(err)
+	}
+
+	if fldModel == nil {
+		return nil, errsvc.FldErr.NotFound.New(err)
+	}
+
+	return fldModel, nil
 }
 
 func NewFldService(cfg *config.Config, fldRepo *folder_repo.FldRepo, securityService *security_service.SecurityService) *FolderService {
@@ -56,7 +88,7 @@ func (f *FolderService) CreateFolder(fldName string, usrModel *user_model.UserMo
 	err := os.MkdirAll(fullPath, folderPermissionRWXRXRX)
 
 	if err != nil {
-		return errsvc.FldErr.CreateFailed.New()
+		return errsvc.FldErr.CreateFailed.New(err)
 	}
 
 	fldId := uuid.New()
@@ -73,7 +105,7 @@ func (f *FolderService) CreateFolder(fldName string, usrModel *user_model.UserMo
 
 	if err != nil {
 		os.RemoveAll(fullPath)
-		return errsvc.FldErr.CreateFailed.New()
+		return errsvc.FldErr.CreateFailed.New(err)
 	}
 
 	_, err = f.FldRepo.InsertFolderAccess(folder_model.FolderAccessModel{
@@ -84,7 +116,7 @@ func (f *FolderService) CreateFolder(fldName string, usrModel *user_model.UserMo
 
 	if err != nil {
 		os.RemoveAll(fullPath)
-		return errsvc.FldErr.CreateFailed.New()
+		return errsvc.FldErr.CreateFailed.New(err)
 	}
 
 	log.Debug().
@@ -98,29 +130,29 @@ func (f *FolderService) DelFld(fldName string, usrID uuid.UUID) error {
 	mainFldModel, err := f.FldRepo.GetGeneralFolderByUsrId(usrID)
 
 	if err != nil || mainFldModel == nil {
-		return errsvc.FldErr.NotFound.New()
+		return errsvc.FldErr.NotFound.New(err)
 	}
 
 	fldModel, err := f.FldRepo.GetFldByNameAndMainFldId(fldName, mainFldModel.FolderID)
 
 	if err != nil || fldModel == nil {
-		return errsvc.FldErr.NotFound.New()
+		return errsvc.FldErr.NotFound.New(err)
 	}
 
 	if fldModel.MainFldId == nil {
-		return errsvc.FldErr.CantDelMainFld.New()
+		return errsvc.FldErr.CantDelMainFld.New(err)
 	}
 
 	err = f.FldRepo.DelFld(fldModel.ID)
 
 	if err != nil {
-		return errsvc.FldErr.DelFailed.New()
+		return errsvc.FldErr.DelFailed.New(err)
 	}
 
 	err = os.RemoveAll(filepath.Join(f.StoragePath, fldName))
 
 	if err != nil {
-		return errsvc.FldErr.DelFailed.New()
+		return errsvc.FldErr.DelFailed.New(err)
 	}
 
 	return nil
@@ -144,21 +176,21 @@ func (f *FolderService) CreateSubFld(fldName string, parentID uuid.UUID, usrMode
 	}
 
 	if err != nil {
-		return nil, errsvc.FldErr.NotFound.New()
+		return nil, errsvc.FldErr.NotFound.New(err)
 	}
 
 	if mainFldModel.Name == fldName {
-		return nil, errsvc.FldErr.AlreadyExists.New()
+		return nil, errsvc.FldErr.AlreadyExists.New(err)
 	}
 
 	fldModel, err := f.FldRepo.GetFldByNameAndMainFldId(fldName, mainFldModel.ID)
 
 	if err != nil {
-		return nil, errsvc.FldErr.Internal.New()
+		return nil, errsvc.FldErr.Internal.New(err)
 	}
 
 	if fldModel != nil {
-		return nil, errsvc.FldErr.AlreadyExists.New()
+		return nil, errsvc.FldErr.AlreadyExists.New(err)
 	}
 
 	fldModel = &folder_model.FolderModel{
@@ -174,7 +206,7 @@ func (f *FolderService) CreateSubFld(fldName string, parentID uuid.UUID, usrMode
 	fldModel, err = f.FldRepo.CreateFld(fldModel)
 
 	if err != nil {
-		return nil, errsvc.FldErr.CreateFailed.New()
+		return nil, errsvc.FldErr.CreateFailed.New(err)
 	}
 
 	_, err = f.FldRepo.InsertFolderAccess(folder_model.FolderAccessModel{
@@ -195,7 +227,7 @@ func (f *FolderService) isMainFld(fldID uuid.UUID) (bool, *folder_model.FolderMo
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get folder")
-		return false, fldModel, errsvc.FldErr.Internal.New()
+		return false, fldModel, errsvc.FldErr.Internal.New(err)
 	}
 
 	if fldModel != nil {
@@ -211,7 +243,7 @@ func (f *FolderService) rollbackFolder(fldName string, id uuid.UUID, logMsg stri
 	if delErr := f.DelFld(fldName, id); delErr != nil {
 		log.Error().Err(delErr).Str("folder_id", id.String()).
 			Msg("rollback failed, inconsistent state: manual cleanup required")
-		return errsvc.UsrErr.InconsistentState.New()
+		return errsvc.UsrErr.InconsistentState.New(err)
 	}
 	return err
 }

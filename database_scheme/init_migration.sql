@@ -33,7 +33,6 @@ CREATE TABLE files (
     name VARCHAR(255) NOT NULL,
     folder_id UUID NOT NULL REFERENCES folders(id) ON DELETE CASCADE,
     size BIGINT,
-    checksum_sha256 VARCHAR(64),
     mime_type VARCHAR(128),
     storage_key VARCHAR(512),
     created_at TIMESTAMP DEFAULT NOW()

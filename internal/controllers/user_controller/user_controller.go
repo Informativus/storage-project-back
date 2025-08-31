@@ -32,13 +32,7 @@ func NewUserController(services *services.Services) *UserController {
 func (uc *UserController) CreateUser(c *gin.Context) {
 	dto := c.MustGet("createUserDTO").(user_dto.CreateUserDto)
 
-	connUsrToFld := false
-
-	if dto.ConnUserToFld != nil {
-		connUsrToFld = *dto.ConnUserToFld
-	}
-
-	token, err := uc.UserService.CreateUser(dto.UsrName, connUsrToFld)
+	token, err := uc.UserService.CreateUser(dto.UsrName)
 
 	if err != nil {
 		c.Error(err)

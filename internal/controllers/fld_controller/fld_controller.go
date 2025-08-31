@@ -5,6 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/ivan/storage-project-back/internal/controllers/dtos/fld_dto"
+	"github.com/ivan/storage-project-back/internal/middlewares/fld_middleware"
+	"github.com/ivan/storage-project-back/internal/middlewares/guard"
 	"github.com/ivan/storage-project-back/internal/models/user_model"
 	"github.com/ivan/storage-project-back/internal/services"
 	"github.com/ivan/storage-project-back/internal/services/folder_service"
@@ -30,8 +32,8 @@ func NewFldController(services *services.Services) *FldController {
 // @Success 204 "No Content"
 // @Router /fld/delete/{fldName} [delete]
 func (fc *FldController) DelFld(c *gin.Context) {
-	dto := c.MustGet("dltDTO").(fld_dto.DelFld)
-	usrDto := c.MustGet("usrDTO").(*user_model.UserModel)
+	dto := c.MustGet(fld_middleware.SetDelFldDtoKey).(fld_dto.DelFld)
+	usrDto := c.MustGet(guard.SetUsrDtoKey).(*user_model.UserModel)
 
 	err := fc.fldService.DelFld(dto.Name, usrDto.ID)
 
@@ -48,13 +50,13 @@ func (fc *FldController) DelFld(c *gin.Context) {
 // @Tags Folders
 // @Accept json
 // @Produce json
-// @Param user body fld_dto.CreateFldReq true "Fld info"
+// @Param folder body fld_dto.CreateFldReq true "Fld info"
 // @Security BearerAuth
 // @Success 200 {object} fld_dto.CreateFldRes "Successful response"
 // @Router /fld/create [post]
 func (fc *FldController) CreateFld(c *gin.Context) {
-	dto := c.MustGet("createDTO").(fld_dto.CreateFldReq)
-	usrDto := c.MustGet("usrDTO").(*user_model.UserModel)
+	dto := c.MustGet(fld_middleware.SetCreateFldDtoKey).(fld_dto.CreateFldReq)
+	usrDto := c.MustGet(guard.SetUsrDtoKey).(*user_model.UserModel)
 
 	fldID, err := fc.fldService.CreateSubFld(dto.Name, dto.ParentID, usrDto)
 

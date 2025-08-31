@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/ivan/storage-project-back/internal/repository/file_repo"
 	"github.com/ivan/storage-project-back/internal/repository/folder_repo"
 	"github.com/ivan/storage-project-back/internal/repository/security_repo"
 	user_repo "github.com/ivan/storage-project-back/internal/repository/user_repo"
@@ -11,6 +12,7 @@ type Repositories struct {
 	UserRepo *user_repo.UserRepo
 	FldRepo  *folder_repo.FldRepo
 	SecRepo  *security_repo.SecurityRepo
+	FileRepo *file_repo.FileRepo
 }
 
 func NewRepositories(db database.DBClient) *Repositories {
@@ -18,5 +20,6 @@ func NewRepositories(db database.DBClient) *Repositories {
 		UserRepo: user_repo.NewUserRepo(db),
 		FldRepo:  folder_repo.NewFldRepo(db),
 		SecRepo:  security_repo.NewSecurityRepo(db),
+		FileRepo: file_repo.NewFileRepo(db),
 	}
 }

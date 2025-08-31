@@ -9,6 +9,11 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const (
+	SetDelFldDtoKey    = "delDTO"
+	SetCreateFldDtoKey = "createDTO"
+)
+
 func DelFld(c *gin.Context) {
 	fldName := c.Param("fldName")
 
@@ -22,7 +27,7 @@ func DelFld(c *gin.Context) {
 		return
 	}
 
-	c.Set("dltDTO", dto)
+	c.Set(SetDelFldDtoKey, dto)
 
 	c.Next()
 }
@@ -43,7 +48,7 @@ func CreateFld(c *gin.Context) {
 		return
 	}
 
-	c.Set("createDTO", dto)
+	c.Set(SetCreateFldDtoKey, dto)
 
 	c.Next()
 }

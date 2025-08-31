@@ -6,6 +6,7 @@ import (
 	"github.com/ivan/storage-project-back/internal/controllers/fld_controller"
 	"github.com/ivan/storage-project-back/internal/controllers/user_controller"
 	"github.com/ivan/storage-project-back/internal/middlewares/error_middleware"
+	"github.com/ivan/storage-project-back/internal/middlewares/file_middleware"
 	"github.com/ivan/storage-project-back/internal/middlewares/fld_middleware"
 	"github.com/ivan/storage-project-back/internal/middlewares/guard"
 	"github.com/ivan/storage-project-back/internal/middlewares/users_middleware"
@@ -47,13 +48,13 @@ func (c *Controllers) RegisterRoutes(router *gin.Engine) {
 
 		fld := api.Group("/fld")
 		{
-			fld.POST("/create", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.User, roles_model.Admin}), fld_middleware.CreateFld, c.FldController.CreateFld)
-			fld.DELETE("/delete/:fldName", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.User, roles_model.Admin}), fld_middleware.DelFld, c.FldController.DelFld)
+			fld.POST("/create", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.User}), fld_middleware.CreateFld, c.FldController.CreateFld)
+			fld.DELETE("/delete/:fldName", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.User}), fld_middleware.DelFld, c.FldController.DelFld)
 		}
 
 		file := api.Group("/file")
 		{
-			file.POST("/upload", c.FileController.Upload)
+			file.POST("/upload", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.User}), file_middleware.UploadFileMidd, c.FileController.Upload)
 		}
 	}
 }

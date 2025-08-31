@@ -11,6 +11,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const SetUsrDtoKey = "usrDTO"
+
 func AuthGuard(jwt *jwt_service.JwtService, usrRepo *user_repo.UserRepo, accessRoles []roles_model.Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
@@ -71,7 +73,7 @@ func AuthGuard(jwt *jwt_service.JwtService, usrRepo *user_repo.UserRepo, accessR
 			return
 		}
 
-		c.Set("usrDTO", usr)
+		c.Set(SetUsrDtoKey, usr)
 
 		c.Next()
 	}

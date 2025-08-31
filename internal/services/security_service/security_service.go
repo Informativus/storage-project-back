@@ -23,11 +23,11 @@ func (ss *SecurityService) AccessToCreateFldForUsr(usrModel *user_model.UserMode
 	fldAccessModel, err := ss.SecurityRepo.GetUsrRoleForFolder(usrModel.ID, fldToCreateID)
 
 	if err != nil {
-		return errsvc.SecurityErr.Internal.New()
+		return errsvc.SecurityErr.Internal.New(err)
 	}
 
 	if fldAccessModel == nil {
-		return errsvc.SecurityErr.NotFound.New()
+		return errsvc.SecurityErr.NotFound.New(err)
 	}
 
 	accessRoles := map[roles_model.Role]struct{}{
@@ -36,7 +36,31 @@ func (ss *SecurityService) AccessToCreateFldForUsr(usrModel *user_model.UserMode
 	}
 
 	if _, ok := accessRoles[fldAccessModel.RoleID]; !ok {
-		return errsvc.UsrErr.Forbidden.New()
+		return errsvc.UsrErr.Forbidden.New(err)
+	}
+
+	return nil
+}
+
+func (ss *SecurityService) AccessToUploadFileInFld(usrModel *user_model.UserModel, fldID uuid.UUID) error {
+	fldAccessModel, err := ss.SecurityRepo.GetUsrRoleForFolder(usrModel.ID, fldID)
+
+	if err != nil {
+		return errsvc.SecurityErr.Internal.New(err)
+	}
+
+	if fldAccessModel == nil {
+		return errsvc.SecurityErr.NotFound.New(err)
+	}
+
+	accessRoles := map[roles_model.Role]struct{}{
+		roles_model.Owner:  {},
+		roles_model.Admin:  {},
+		roles_model.Editor: {},
+	}
+
+	if _, ok := accessRoles[fldAccessModel.RoleID]; !ok {
+		return errsvc.UsrErr.Forbidden.New(err)
 	}
 
 	return nil

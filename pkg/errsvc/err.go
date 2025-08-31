@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"runtime"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 )
 
 type AppErrorTemplate struct {
@@ -12,7 +14,8 @@ type AppErrorTemplate struct {
 	Code    int
 }
 
-func (t AppErrorTemplate) New() *AppError {
+func (t AppErrorTemplate) New(err error) *AppError {
+	log.Error().Err(err).Msg(t.Message)
 	return &AppError{
 		Key:     t.Key,
 		Message: t.Message,
@@ -66,6 +69,18 @@ var (
 		NotFound:      AppErrorTemplate{"folder_not_found", "folder not found", 404},
 		AlreadyExists: AppErrorTemplate{"folder_already_exists", "folder already exists", 400},
 		Internal:      AppErrorTemplate{"internal", "internal server error", 500},
+	}
+
+	FileErr = struct {
+		Internal          AppErrorTemplate
+		SaveFailed        AppErrorTemplate
+		DelFailed         AppErrorTemplate
+		InconsistentState AppErrorTemplate
+	}{
+		Internal:          AppErrorTemplate{"internal", "internal server error", 500},
+		SaveFailed:        AppErrorTemplate{"internal", "save file failed", 500},
+		DelFailed:         AppErrorTemplate{"internal", "delete file failed", 500},
+		InconsistentState: AppErrorTemplate{"inconsistent_state", "inconsistent state", 500},
 	}
 )
 
