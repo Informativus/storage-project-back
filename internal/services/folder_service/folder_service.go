@@ -126,14 +126,14 @@ func (f *FolderService) CreateFolder(fldName string, usrModel *user_model.UserMo
 	return nil
 }
 
-func (f *FolderService) DelFld(fldName string, usrID uuid.UUID) error {
+func (f *FolderService) DelFld(fldID uuid.UUID, usrID uuid.UUID) error {
 	mainFldModel, err := f.FldRepo.GetGeneralFolderByUsrId(usrID)
 
 	if err != nil || mainFldModel == nil {
 		return errsvc.FldErr.NotFound.New(err)
 	}
 
-	fldModel, err := f.FldRepo.GetFldByNameAndMainFldId(fldName, mainFldModel.FolderID)
+	fldModel, err := f.FldRepo.GetFldByIdAndMainFldId(fldID, mainFldModel.FolderID)
 
 	if err != nil || fldModel == nil {
 		return errsvc.FldErr.NotFound.New(err)
@@ -210,7 +210,7 @@ func (f *FolderService) CreateSubFld(fldName string, parentID uuid.UUID, usrMode
 	})
 
 	if err != nil {
-		return nil, f.rollbackFolder(fldName, fldModel.ID, "failed to insert folder access", err)
+		return nil, f.rollbackFolder(fldModel.ID, fldModel.ID, "failed to insert folder access", err)
 	}
 
 	return &fldModel.ID, nil
@@ -231,10 +231,10 @@ func (f *FolderService) isMainFld(fldID uuid.UUID) (bool, *folder_model.FolderMo
 	return false, fldModel, nil
 }
 
-func (f *FolderService) rollbackFolder(fldName string, id uuid.UUID, logMsg string, err error) error {
+func (f *FolderService) rollbackFolder(fldID uuid.UUID, id uuid.UUID, logMsg string, err error) error {
 	log.Error().Err(err).Msg(logMsg)
 
-	if delErr := f.DelFld(fldName, id); delErr != nil {
+	if delErr := f.DelFld(fldID, id); delErr != nil {
 		log.Error().Err(delErr).Str("folder_id", id.String()).
 			Msg("rollback failed, inconsistent state: manual cleanup required")
 		return errsvc.UsrErr.InconsistentState.New(err)

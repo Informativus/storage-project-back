@@ -49,7 +49,7 @@ func (c *Controllers) RegisterRoutes(router *gin.Engine) {
 		fld := api.Group("/fld")
 		{
 			fld.POST("/create", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.User}), fld_middleware.CreateFld, c.FldController.CreateFld)
-			fld.DELETE("/delete/:fldName", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.User}), fld_middleware.DelFld, c.FldController.DelFld)
+			fld.DELETE("/delete/:fldID", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.User}), fld_middleware.DelFld, c.FldController.DelFld)
 		}
 
 		file := api.Group("/file")

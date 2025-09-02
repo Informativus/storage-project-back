@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/ivan/storage-project-back/internal/controllers/dtos/fld_dto"
 	"github.com/ivan/storage-project-back/internal/utils/validation"
 	"github.com/rs/zerolog/log"
@@ -15,10 +16,20 @@ const (
 )
 
 func DelFld(c *gin.Context) {
-	fldName := c.Param("fldName")
+	fldID := c.Param("fldID")
 
 	var dto fld_dto.DelFld
-	dto.Name = fldName
+
+	parsedID, err := uuid.Parse(fldID)
+
+	if err != nil {
+		log.Error().Err(err).Msg("failed to parse fldID")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to parse fldID"})
+		c.Abort()
+		return
+	}
+
+	dto.FldID = parsedID
 
 	if err := validation.Validate.Struct(dto); err != nil {
 		log.Error().Err(err).Msg("failed to validate request")

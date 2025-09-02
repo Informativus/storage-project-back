@@ -18,6 +18,7 @@ type IFldRepo interface {
 	GetGeneralFolderBySubFldId(id uuid.UUID) (*folder_model.FolderModel, error)
 	GetFldByNameAndMainFldId(fldName string, mainID uuid.UUID) (*folder_model.FolderModel, error)
 	GetFldById(fldId uuid.UUID) (*folder_model.FolderModel, error)
+	GetFldByIdAndMainFldId(fldID uuid.UUID, mainID uuid.UUID) (*folder_model.FolderModel, error)
 	DelFld(id uuid.UUID) error
 }
 
@@ -212,6 +213,37 @@ func (f *FldRepo) GetFldByNameAndMainFldId(fldName string, mainID uuid.UUID) (*f
 
 	selected := folder_model.FolderModel{}
 	err = f.db.QueryRow(context.Background(), query, fldName, mainID).Scan(
+		&selected.ID,
+		&selected.Name,
+		&selected.ParentID,
+		&selected.OwnerID,
+		&selected.MainFldId,
+		&selected.CreatedAt,
+		&selected.UpdatedAt,
+	)
+
+	if err != nil && f.db.IsErrNoRows(err) {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &selected, nil
+}
+
+func (f *FldRepo) GetFldByIdAndMainFldId(fldID uuid.UUID, mainID uuid.UUID) (*folder_model.FolderModel, error) {
+	cals, err := sql_builder.SelectArgs(folder_model.FolderModel{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	where := "id = $1 and main_folder_id = $2"
+
+	query := sql_builder.BuildSelectQuery(folder_model.TableName, cals, &where)
+
+	selected := folder_model.FolderModel{}
+	err = f.db.QueryRow(context.Background(), query, fldID, mainID).Scan(
 		&selected.ID,
 		&selected.Name,
 		&selected.ParentID,

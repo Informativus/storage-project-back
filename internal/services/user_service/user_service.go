@@ -87,7 +87,7 @@ func (u *UserService) DelUser(id uuid.UUID) error {
 		return errsvc.UsrErr.NotFound.New(err)
 	}
 
-	if err := u.UserRepo.DelUser(id); err != nil {
+	if tag, err := u.UserRepo.DelUser(id); err != nil || tag == 0 {
 		return errsvc.UsrErr.Internal.New(err)
 	}
 

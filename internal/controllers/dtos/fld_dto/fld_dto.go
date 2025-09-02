@@ -3,7 +3,7 @@ package fld_dto
 import "github.com/google/uuid"
 
 type DelFld struct {
-	Name string `json:"name" validate:"required,fld_max,fld_valid"`
+	FldID uuid.UUID `json:"fldID" validate:"required"`
 }
 
 type CreateFldReq struct {

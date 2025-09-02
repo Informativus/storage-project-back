@@ -2,7 +2,6 @@ package user_repo
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -74,20 +73,16 @@ func (ur *UserRepo) InsertUserToken(user user_model.UserTokensModel) (user_model
 	return inserted, nil
 }
 
-func (ur *UserRepo) DelUser(id uuid.UUID) error {
+func (ur *UserRepo) DelUser(id uuid.UUID) (int64, error) {
 	query := sql_builder.BuildDeleteQuery(user_model.TableName, "id = $1")
 
 	tag, err := ur.db.Exec(context.Background(), query, id)
 
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	if tag.RowsAffected() == 0 {
-		return errors.New("failed_delete")
-	}
-
-	return nil
+	return tag.RowsAffected(), nil
 }
 
 func (ur *UserRepo) GetUserById(id uuid.UUID) (*user_model.UserModel, error) {

@@ -27,15 +27,15 @@ func NewFldController(services *services.Services) *FldController {
 // @Tags Folders
 // @Accept json
 // @Produce json
-// @Param fldName path string true "Folder name to delete"
+// @Param fldID path string true "Folder name to delete"
 // @Security BearerAuth
 // @Success 204 "No Content"
-// @Router /fld/delete/{fldName} [delete]
+// @Router /fld/delete/{fldID} [delete]
 func (fc *FldController) DelFld(c *gin.Context) {
 	dto := c.MustGet(fld_middleware.SetDelFldDtoKey).(fld_dto.DelFld)
 	usrDto := c.MustGet(guard.SetUsrDtoKey).(*user_model.UserModel)
 
-	err := fc.fldService.DelFld(dto.Name, usrDto.ID)
+	err := fc.fldService.DelFld(dto.FldID, usrDto.ID)
 
 	if err != nil {
 		c.Error(err)
