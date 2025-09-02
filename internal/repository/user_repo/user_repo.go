@@ -3,6 +3,7 @@ package user_repo
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/ivan/storage-project-back/internal/models/user_model"
@@ -183,20 +184,15 @@ func (ur *UserRepo) GetUserAccessByToken(token string) (*user_model.UserTokensMo
 	return &selected, nil
 }
 
-func (ur *UserRepo) DelExpiredTokens() error {
-	query := sql_builder.BuildDeleteQuery(user_model.TokenTableName, "expires_at < now()")
+func (ur *UserRepo) DelExpiredTokens() (int64, error) {
+	query := sql_builder.BuildDeleteQuery(user_model.TokenTableName, "expires_at < $1")
 
-	tag, err := ur.db.Exec(context.Background(), query)
+	tag, err := ur.db.Exec(context.Background(), query, time.Now())
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to delete expired tokens")
-		return err
+		return 0, err
 	}
 
-	if tag.RowsAffected() == 0 {
-		log.Error().Msg("failed to delete expired tokens")
-		return errors.New("failed_delete")
-	}
-
-	return nil
+	return tag.RowsAffected(), nil
 }

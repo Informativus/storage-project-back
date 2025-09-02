@@ -55,6 +55,7 @@ func (c *Controllers) RegisterRoutes(router *gin.Engine) {
 		file := api.Group("/file")
 		{
 			file.POST("/upload", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.User}), file_middleware.UploadFileMidd, c.FileController.Upload)
+			file.DELETE("/delete/:fileID", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.User}), file_middleware.DelFileMidd, c.FileController.Del)
 		}
 	}
 }

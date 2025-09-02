@@ -1,11 +1,8 @@
 package file_middleware
 
 import (
-	"io"
-	"mime/multipart"
 	"net/http"
 
-	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/google/uuid"
@@ -14,7 +11,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const SetUploadFileKey = "uploadFileDTO"
+const (
+	SetUploadFileKey = "uploadFileDTO"
+	SetDelFileKey    = "delFileDTO"
+)
 
 func UploadFileMidd(c *gin.Context) {
 	var dto file_dto.UploadFileDto
@@ -34,8 +34,6 @@ func UploadFileMidd(c *gin.Context) {
 		return
 	}
 
-	validatePublicKey(dto.PublicKey, c)
-
 	dto.FldID = fldUUID
 
 	if err := validation.Validate.Struct(dto); err != nil {
@@ -50,37 +48,28 @@ func UploadFileMidd(c *gin.Context) {
 	c.Next()
 }
 
-func validatePublicKey(pubKey *multipart.FileHeader, c *gin.Context) {
-	if pubKey == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "publicKey is required"})
-		c.Abort()
-		return
-	}
+func DelFileMidd(c *gin.Context) {
+	fileID := c.Param("fileID")
 
-	f, err := pubKey.Open()
+	var dto file_dto.DelFileDto
+
+	parsedID, err := uuid.Parse(fileID)
 
 	if err != nil {
-		log.Error().Err(err).Msg("failed to open public key file")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to open public key file"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "fileID is not valid UUID"})
 		c.Abort()
 		return
 	}
 
-	defer f.Close()
+	dto.FileID = parsedID
 
-	data, err := io.ReadAll(f)
-
-	if err != nil {
-		log.Error().Err(err).Msg("failed to read public key file")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to read public key file"})
+	if err := validation.Validate.Struct(dto); err != nil {
+		log.Error().Err(err).Msg("failed to validate request")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to validate request"})
 		c.Abort()
 		return
 	}
 
-	if _, err := crypto.NewKeyFromArmored(string(data)); err != nil {
-		log.Error().Err(err).Msg("failed to parse public key")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to parse public key"})
-		c.Abort()
-		return
-	}
+	c.Set(SetDelFileKey, &dto)
+
 }

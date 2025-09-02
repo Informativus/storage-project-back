@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"net/http"
 	"slices"
 	"strings"
 
@@ -19,7 +20,7 @@ func AuthGuard(jwt *jwt_service.JwtService, usrRepo *user_repo.UserRepo, accessR
 
 		if authHeader == "" {
 			log.Error().Msg("authorization header required")
-			c.JSON(401, gin.H{"error": "authorization header required"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization header required"})
 			c.Abort()
 			return
 		}
@@ -27,7 +28,7 @@ func AuthGuard(jwt *jwt_service.JwtService, usrRepo *user_repo.UserRepo, accessR
 		const bearerPrefix = "Bearer "
 		if !strings.HasPrefix(authHeader, bearerPrefix) {
 			log.Error().Msg("invalid authorization header")
-			c.JSON(401, gin.H{"error": "invalid authorization header"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid authorization header"})
 			c.Abort()
 			return
 		}
@@ -38,7 +39,7 @@ func AuthGuard(jwt *jwt_service.JwtService, usrRepo *user_repo.UserRepo, accessR
 
 		if err != nil {
 			log.Error().Err(err).Msg("failed to parse token")
-			c.JSON(401, gin.H{"error": "invalid token"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
 			c.Abort()
 			return
 		}
@@ -47,13 +48,13 @@ func AuthGuard(jwt *jwt_service.JwtService, usrRepo *user_repo.UserRepo, accessR
 
 		if err != nil || usr == nil {
 			log.Error().Err(err).Msg("failed to get user")
-			c.JSON(401, gin.H{"error": "invalid data"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid data"})
 			c.Abort()
 			return
 		}
 
 		if !slices.Contains(accessRoles, usr.RoleID) || usr.Blocked {
-			c.JSON(403, gin.H{"error": "unauthorized"})
+			c.JSON(http.StatusForbidden, gin.H{"error": "unauthorized"})
 			c.Abort()
 			return
 		}
@@ -62,13 +63,13 @@ func AuthGuard(jwt *jwt_service.JwtService, usrRepo *user_repo.UserRepo, accessR
 
 		if err != nil || usrAccess == nil {
 			log.Error().Err(err).Msg("failed to get user access")
-			c.JSON(401, gin.H{"error": "invalid data"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid data"})
 			c.Abort()
 			return
 		}
 
 		if usrAccess.Revoked {
-			c.JSON(403, gin.H{"error": "unauthorized"})
+			c.JSON(http.StatusForbidden, gin.H{"error": "unauthorized"})
 			c.Abort()
 			return
 		}

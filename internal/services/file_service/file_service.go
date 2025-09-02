@@ -21,14 +21,14 @@ import (
 )
 
 type FileService struct {
-	StoragePath     string
+	Cfg             *config.Config
 	SecurityService *security_service.SecurityService
 	FolderService   *folder_service.FolderService
 	FileRepo        *file_repo.FileRepo
 }
 
 func NewFileService(cfg *config.Config, securityService *security_service.SecurityService, folderService *folder_service.FolderService, fileRepo *file_repo.FileRepo) *FileService {
-	return &FileService{StoragePath: cfg.StoragePath, SecurityService: securityService, FolderService: folderService, FileRepo: fileRepo}
+	return &FileService{Cfg: cfg, SecurityService: securityService, FolderService: folderService, FileRepo: fileRepo}
 }
 
 func (f *FileService) UploadFileToFld(usrModel *user_model.UserModel, uploadFileDto *file_dto.UploadFileDto) (*uuid.UUID, error) {
@@ -73,7 +73,7 @@ func (f *FileService) UploadFileToFld(usrModel *user_model.UserModel, uploadFile
 			return nil, errsvc.FileErr.Internal.New(err)
 		}
 	} else {
-		encryptedFile, err := encryption.EncryptFile(uploadFileDto.File, uploadFileDto.PublicKey)
+		encryptedFile, err := encryption.EncryptFile(uploadFileDto.File, f.Cfg.GpgPublicKeyPath)
 
 		if err != nil {
 			return nil, errsvc.FileErr.Internal.New(err)
@@ -96,6 +96,7 @@ func (f *FileService) UploadFileToFld(usrModel *user_model.UserModel, uploadFile
 		MimeType:   uploadFileDto.File.Header.Get("Content-Type"),
 		StorageKey: storageKey,
 		CreatedAt:  time.Now(),
+		DeletedAt:  nil,
 	}
 
 	fileModel, err = f.FileRepo.UploadFile(fileModel)
@@ -110,8 +111,29 @@ func (f *FileService) UploadFileToFld(usrModel *user_model.UserModel, uploadFile
 	return &fileModel.ID, nil
 }
 
+func (f *FileService) DelFile(fileID uuid.UUID) error {
+	// TODO: Добавить проверку на права удаления
+	fileModel, err := f.FileRepo.GetFileByID(fileID)
+
+	if err != nil {
+		return errsvc.FileErr.Internal.New(err)
+	}
+
+	if fileModel == nil {
+		return errsvc.FileErr.NotFound.New(err)
+	}
+
+	markedCount, err := f.FileRepo.MarkFileAsDeleted(fileID, time.Now())
+
+	if err != nil || markedCount == 0 {
+		return errsvc.FileErr.Internal.New(err)
+	}
+
+	return nil
+}
+
 func (f *FileService) prepareStorage(fldPathToSave string, storageFileName string) string {
-	dst := filepath.Join(f.StoragePath, fldPathToSave, storageFileName)
+	dst := filepath.Join(f.Cfg.StoragePath, fldPathToSave, storageFileName)
 
 	return dst
 }

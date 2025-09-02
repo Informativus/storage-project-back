@@ -143,15 +143,9 @@ func (f *FolderService) DelFld(fldName string, usrID uuid.UUID) error {
 		return errsvc.FldErr.CantDelMainFld.New(err)
 	}
 
-	err = f.FldRepo.DelFld(fldModel.ID)
+	delCount, err := f.FldRepo.DelFld(fldModel.ID)
 
-	if err != nil {
-		return errsvc.FldErr.DelFailed.New(err)
-	}
-
-	err = os.RemoveAll(filepath.Join(f.StoragePath, fldName))
-
-	if err != nil {
+	if err != nil || delCount == 0 {
 		return errsvc.FldErr.DelFailed.New(err)
 	}
 

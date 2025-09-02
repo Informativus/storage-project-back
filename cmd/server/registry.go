@@ -33,7 +33,7 @@ func NewRegistry(cfg *config.Config, routers *gin.Engine) *Registry {
 	services := services.NewServices(cfg, repos, jwt)
 	controllers := controllers.NewControllers(services, jwt, repos.UserRepo)
 
-	jbs := jobs.NewStartJobs(repos)
+	jbs := jobs.NewStartJobs(repos, cfg)
 
 	jbs.StartAllJobs()
 

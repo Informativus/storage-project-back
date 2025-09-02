@@ -120,3 +120,7 @@ func BuildSelectJoinQuery(table string, cols []string, joinExpression string, wh
 func BuildDeleteQuery(table string, whereExpression string) string {
 	return fmt.Sprintf("DELETE FROM %s WHERE %s", table, whereExpression)
 }
+
+func BuildUpdateQuery(table string, fildsToUpdate string, whereExpression string) string {
+	return fmt.Sprintf("UPDATE %s SET %s WHERE %s", table, fildsToUpdate, whereExpression)
+}

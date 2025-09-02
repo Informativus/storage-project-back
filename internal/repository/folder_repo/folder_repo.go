@@ -261,17 +261,14 @@ func (f *FldRepo) GetFldById(fldId uuid.UUID) (*folder_model.FolderModel, error)
 	return &selected, nil
 }
 
-func (f *FldRepo) DelFld(id uuid.UUID) error {
+func (f *FldRepo) DelFld(id uuid.UUID) (int64, error) {
 	query := sql_builder.BuildDeleteQuery(folder_model.TableName, "id = $1")
 
 	tag, err := f.db.Exec(context.Background(), query, id)
+
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	if tag.RowsAffected() == 0 {
-		return err
-	}
-
-	return nil
+	return tag.RowsAffected(), nil
 }

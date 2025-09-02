@@ -74,11 +74,13 @@ var (
 	FileErr = struct {
 		Internal          AppErrorTemplate
 		SaveFailed        AppErrorTemplate
+		NotFound          AppErrorTemplate
 		DelFailed         AppErrorTemplate
 		InconsistentState AppErrorTemplate
 	}{
 		Internal:          AppErrorTemplate{"internal", "internal server error", 500},
 		SaveFailed:        AppErrorTemplate{"internal", "save file failed", 500},
+		NotFound:          AppErrorTemplate{"file_not_found", "file not found", 404},
 		DelFailed:         AppErrorTemplate{"internal", "delete file failed", 500},
 		InconsistentState: AppErrorTemplate{"inconsistent_state", "inconsistent state", 500},
 	}

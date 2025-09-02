@@ -19,6 +19,7 @@ type Config struct {
 	StoragePath      string
 	SecretKey        string
 	ExpiresIn        int64
+	GpgPublicKeyPath string
 }
 
 func NewConfig() (*Config, error) {
@@ -36,6 +37,7 @@ func NewConfig() (*Config, error) {
 		StoragePath:      getStrFromEnv("STORAGE_PATH", true),
 		SecretKey:        getStrFromEnv("SECRET_KEY", true),
 		ExpiresIn:        getTimeFromEnv("EXPIRESIN", true, "seconds"),
+		GpgPublicKeyPath: getStrFromEnv("GPG_PUBLIC_KEY_PATH", true),
 	}
 
 	return cfg, nil

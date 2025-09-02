@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"mime/multipart"
+	"os"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 )
@@ -37,7 +38,7 @@ func IsPGPEncrypted(fileHeader *multipart.FileHeader) (bool, error) {
 	return false, nil
 }
 
-func EncryptFile(fileHeader *multipart.FileHeader, publicKey *multipart.FileHeader) ([]byte, error) {
+func EncryptFile(fileHeader *multipart.FileHeader, publicKeyPath string) ([]byte, error) {
 	file, err := fileHeader.Open()
 
 	if err != nil {
@@ -52,20 +53,13 @@ func EncryptFile(fileHeader *multipart.FileHeader, publicKey *multipart.FileHead
 		return nil, err
 	}
 
-	pubFile, err := publicKey.Open()
+	pubData, err := os.ReadFile(publicKeyPath)
 
 	if err != nil {
 		return nil, err
 	}
 
-	defer pubFile.Close()
-
-	pubBuf := new(bytes.Buffer)
-	if _, err := io.Copy(pubBuf, pubFile); err != nil {
-		return nil, err
-	}
-
-	keyObj, err := crypto.NewKeyFromArmored(pubBuf.String())
+	keyObj, err := crypto.NewKeyFromArmored(string(pubData))
 
 	if err != nil {
 		return nil, err

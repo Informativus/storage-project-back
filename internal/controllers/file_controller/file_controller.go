@@ -47,3 +47,27 @@ func (f *FileController) Upload(c *gin.Context) {
 		"fileID": fileID,
 	})
 }
+
+// @Summary Delete a file
+// @Description Soft delete a file by its UUID. File will be marked as deleted and removed asynchronously by cleanup job.
+// @Tags Files
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param fileID path string true "File ID to delete"
+// @Security BearerAuth
+// @Success 204 "No Content"
+// @Router /file/delete/{fileID} [delete]
+func (f *FileController) Del(c *gin.Context) {
+	// usrDto := c.MustGet(guard.SetUsrDtoKey).(*user_model.UserModel)
+	delFileDto := c.MustGet(file_middleware.SetDelFileKey).(*file_dto.DelFileDto)
+
+	err := f.FileService.DelFile(delFileDto.FileID)
+
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusNoContent, gin.H{})
+}

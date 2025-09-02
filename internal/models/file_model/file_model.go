@@ -13,11 +13,12 @@ const (
 )
 
 type FileModel struct {
-	ID         uuid.UUID `json:"id"`
-	Name       string    `json:"name"`
-	FolderID   uuid.UUID `json:"folder_id"`
-	Size       int64     `json:"size"`
-	MimeType   string    `json:"mime_type"`
-	StorageKey string    `json:"storage_key"`
-	CreatedAt  time.Time `json:"created_at"`
+	ID         uuid.UUID  `json:"id"`
+	Name       string     `json:"name"`
+	FolderID   uuid.UUID  `json:"folder_id"`
+	Size       int64      `json:"size"`
+	MimeType   string     `json:"mime_type"`
+	StorageKey string     `json:"storage_key"`
+	CreatedAt  time.Time  `json:"created_at"`
+	DeletedAt  *time.Time `json:"deleted_at"`
 }

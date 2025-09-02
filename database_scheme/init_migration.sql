@@ -35,7 +35,8 @@ CREATE TABLE files (
     size BIGINT,
     mime_type VARCHAR(128),
     storage_key VARCHAR(512),
-    created_at TIMESTAMP DEFAULT NOW()
+    created_at TIMESTAMP DEFAULT NOW(),
+    deleted_at TIMESTAMP NULL
 );
 
 CREATE TABLE folder_access (
