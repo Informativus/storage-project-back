@@ -5,9 +5,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/ivan/storage-project-back/internal/controllers/dtos/user_dto"
+	"github.com/ivan/storage-project-back/internal/middlewares/guard"
+	"github.com/ivan/storage-project-back/internal/middlewares/users_middleware"
 	"github.com/ivan/storage-project-back/internal/models/user_model"
 	"github.com/ivan/storage-project-back/internal/services"
 	"github.com/ivan/storage-project-back/internal/services/user_service"
+	"github.com/ivan/storage-project-back/pkg/jwt_service"
 )
 
 type UserController struct {
@@ -30,7 +33,7 @@ func NewUserController(services *services.Services) *UserController {
 // @Success 200 {object} user_dto.CreateUserResponse "Successful response"
 // @Router /user/create [post]
 func (uc *UserController) CreateUser(c *gin.Context) {
-	dto := c.MustGet("createUserDTO").(user_dto.CreateUserDto)
+	dto := c.MustGet(users_middleware.SetCreateUserDtoKey).(user_dto.CreateUserDto)
 
 	token, err := uc.UserService.CreateUser(dto.UsrName)
 
@@ -50,8 +53,8 @@ func (uc *UserController) CreateUser(c *gin.Context) {
 // @Security BearerAuth
 // @Success 204 "No Content"
 // @Router /user/delete [delete]
-func (uc *UserController) DltUser(c *gin.Context) {
-	usrDTO := c.MustGet("usrDTO").(*user_model.UserModel)
+func (uc *UserController) DelUser(c *gin.Context) {
+	usrDTO := c.MustGet(guard.SetUsrDtoKey).(*user_model.UserModel)
 	err := uc.UserService.DelUser(usrDTO.ID)
 
 	if err != nil {
@@ -73,7 +76,7 @@ func (uc *UserController) DltUser(c *gin.Context) {
 // @Success 200 "No Content"
 // @Router /user/get_token [post]
 func (uc *UserController) GenToken(c *gin.Context) {
-	tokenDTO := c.MustGet("tokenDTO").(user_dto.GenTokenReq)
+	tokenDTO := c.MustGet(users_middleware.SetTokenDtoKey).(user_dto.GenTokenReq)
 
 	token, err := uc.UserService.AddUserTokenByUsrName(tokenDTO.UsrName)
 
@@ -87,6 +90,45 @@ func (uc *UserController) GenToken(c *gin.Context) {
 	})
 }
 
-func Login(c *gin.Context) {
+// @Summary Ping server
+// @Description Validate user and add him to the cache
+// @Tags User
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 204 "No Content"
+// @Router /user/me [get]
+func (uc *UserController) Me(c *gin.Context) {
+	jwtPayload := c.MustGet(guard.SetJwtDtoKey).(*jwt_service.JwtPayload)
 
+	err := uc.UserService.Me(jwtPayload.ID)
+
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusNoContent, gin.H{})
+}
+
+// @Summary Block user
+// @Description Block user
+// @Tags User
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param blockDto body user_dto.BlockUserReq true "Block info"
+// @Success 204 "No Content"
+// @Router /user/block [patch]
+func (uc *UserController) UpdateBlockUserInf(c *gin.Context) {
+	blockDto := c.MustGet(users_middleware.SetBlockUserDtoKey).(user_dto.BlockUserReq)
+
+	err := uc.UserService.UpdateBlockUserInf(blockDto.UsrName, blockDto.Blocked)
+
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusNoContent, gin.H{})
 }

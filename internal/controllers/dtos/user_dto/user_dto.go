@@ -15,3 +15,8 @@ type GenTokenReq struct {
 type GenTokenRes struct {
 	Token string `json:"token"`
 }
+
+type BlockUserReq struct {
+	UsrName string `json:"usrName" validate:"required,fld_max,fld_valid"`
+	Blocked bool   `json:"blocked"`
+}

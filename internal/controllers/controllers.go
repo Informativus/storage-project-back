@@ -42,8 +42,10 @@ func (c *Controllers) RegisterRoutes(router *gin.Engine) {
 		user := api.Group("/user")
 		{
 			user.POST("/create", guard.JwtGuard(c.jwt, c.UserRepo), guard.UsrGuard(c.UserRepo, []roles_model.Role{roles_model.Admin}), users_middleware.CreateUserMidd, c.UserController.CreateUser)
-			user.DELETE("/delete", guard.JwtGuard(c.jwt, c.UserRepo), guard.UsrGuard(c.UserRepo, []roles_model.Role{roles_model.Admin}), c.UserController.DltUser)
+			user.DELETE("/delete", guard.JwtGuard(c.jwt, c.UserRepo), guard.UsrGuard(c.UserRepo, []roles_model.Role{roles_model.Admin}), c.UserController.DelUser)
 			user.POST("/get_token", guard.JwtGuard(c.jwt, c.UserRepo), guard.UsrGuard(c.UserRepo, []roles_model.Role{roles_model.Admin}), users_middleware.GetTokenMidd, c.UserController.GenToken)
+			user.GET("/me", guard.JwtGuard(c.jwt, c.UserRepo), guard.UsrGuard(c.UserRepo, []roles_model.Role{roles_model.Admin, roles_model.User}), c.UserController.Me)
+			user.PATCH("/block", guard.JwtGuard(c.jwt, c.UserRepo), guard.UsrGuard(c.UserRepo, []roles_model.Role{roles_model.Admin}), users_middleware.BlockUserMiddleware, c.UserController.UpdateBlockUserInf)
 		}
 
 		fld := api.Group("/fld")

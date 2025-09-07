@@ -17,7 +17,6 @@ import (
 	"github.com/ivan/storage-project-back/internal/utils/storage_util"
 	"github.com/ivan/storage-project-back/pkg/config"
 	"github.com/ivan/storage-project-back/pkg/errsvc"
-	"github.com/rs/zerolog/log"
 )
 
 type FileService struct {
@@ -39,7 +38,6 @@ func (f *FileService) UploadFileToFld(usrModel *user_model.UserModel, uploadFile
 	}
 
 	fldModel, err := f.FolderService.GetGeneralFolderByFldId(uploadFileDto.FldID)
-	log.Info().Interface("fldModel", fldModel).Msg("fldModel")
 
 	if err != nil {
 		return nil, err

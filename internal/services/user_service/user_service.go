@@ -94,6 +94,39 @@ func (u *UserService) DelUser(id uuid.UUID) error {
 	return nil
 }
 
+func (u *UserService) Me(id uuid.UUID) error {
+	usrModel, err := u.UserRepo.GetUserById(id)
+
+	if err != nil {
+		return errsvc.UsrErr.Internal.New(err)
+	}
+
+	if usrModel == nil {
+		return errsvc.UsrErr.NotFound.New(err)
+	}
+
+	return nil
+}
+
+func (u *UserService) UpdateBlockUserInf(usrName string, blocked bool) error {
+	usrModel, err := u.UserRepo.GetUserByName(usrName)
+
+	if err != nil {
+		return errsvc.UsrErr.Internal.New(err)
+	}
+
+	if usrModel == nil {
+		return errsvc.UsrErr.NotFound.New(err)
+	}
+
+	_, err = u.UserRepo.UpdateBlockUserInf(blocked, usrModel.ID)
+
+	if err != nil {
+		return errsvc.UsrErr.Internal.New(err)
+	}
+	return nil
+}
+
 func (u *UserService) AddUserTokenByUsrName(usrName string) (string, error) {
 	usrModel, err := u.UserRepo.GetUserByName(usrName)
 

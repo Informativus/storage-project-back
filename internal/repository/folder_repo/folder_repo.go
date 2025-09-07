@@ -86,7 +86,7 @@ func (f *FldRepo) InsertFolderAccess(fldAccessModel folder_model.FolderAccessMod
 }
 
 func (f *FldRepo) GetGeneralFolderByName(fldName string) (*folder_model.MainFolderModel, error) {
-	cals, err := sql_builder.SelectArgs(folder_model.MainFolderModel{})
+	cals, err := sql_builder.GetStructCols(folder_model.MainFolderModel{})
 
 	if err != nil {
 		return nil, err
@@ -113,7 +113,7 @@ func (f *FldRepo) GetGeneralFolderByName(fldName string) (*folder_model.MainFold
 }
 
 func (f *FldRepo) GetGeneralFolderById(fldID uuid.UUID) (*folder_model.FolderModel, error) {
-	cals, err := sql_builder.SelectArgs(folder_model.FolderModel{})
+	cals, err := sql_builder.GetStructCols(folder_model.FolderModel{})
 
 	if err != nil {
 		return nil, err
@@ -144,7 +144,7 @@ func (f *FldRepo) GetGeneralFolderById(fldID uuid.UUID) (*folder_model.FolderMod
 }
 
 func (f *FldRepo) GetGeneralFolderByUsrId(id uuid.UUID) (*folder_model.MainFolderModel, error) {
-	cals, err := sql_builder.SelectArgs(folder_model.MainFolderModel{})
+	cals, err := sql_builder.GetStructCols(folder_model.MainFolderModel{})
 
 	if err != nil {
 		return nil, err
@@ -171,7 +171,7 @@ func (f *FldRepo) GetGeneralFolderByUsrId(id uuid.UUID) (*folder_model.MainFolde
 }
 
 func (f *FldRepo) GetGeneralFolderBySubFldId(id uuid.UUID) (*folder_model.FolderModel, error) {
-	cals, err := sql_builder.SelectArgs(folder_model.FolderModel{})
+	cals, err := sql_builder.GetStructCols(folder_model.FolderModel{})
 
 	if err != nil {
 		return nil, err
@@ -202,7 +202,7 @@ func (f *FldRepo) GetGeneralFolderBySubFldId(id uuid.UUID) (*folder_model.Folder
 }
 
 func (f *FldRepo) GetFldByNameAndMainFldId(fldName string, mainID uuid.UUID) (*folder_model.FolderModel, error) {
-	cals, err := sql_builder.SelectArgs(folder_model.FolderModel{})
+	cals, err := sql_builder.GetStructCols(folder_model.FolderModel{})
 
 	if err != nil {
 		return nil, err
@@ -233,7 +233,7 @@ func (f *FldRepo) GetFldByNameAndMainFldId(fldName string, mainID uuid.UUID) (*f
 }
 
 func (f *FldRepo) GetFldByIdAndMainFldId(fldID uuid.UUID, mainID uuid.UUID) (*folder_model.FolderModel, error) {
-	cals, err := sql_builder.SelectArgs(folder_model.FolderModel{})
+	cals, err := sql_builder.GetStructCols(folder_model.FolderModel{})
 
 	if err != nil {
 		return nil, err
@@ -264,7 +264,7 @@ func (f *FldRepo) GetFldByIdAndMainFldId(fldID uuid.UUID, mainID uuid.UUID) (*fo
 }
 
 func (f *FldRepo) GetFldById(fldId uuid.UUID) (*folder_model.FolderModel, error) {
-	cals, err := sql_builder.SelectArgs(folder_model.FolderModel{})
+	cals, err := sql_builder.GetStructCols(folder_model.FolderModel{})
 
 	if err != nil {
 		return nil, err

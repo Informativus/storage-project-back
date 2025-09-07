@@ -9,6 +9,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const (
+	SetTokenDtoKey      = "tokenDTO"
+	SetCreateUserDtoKey = "createUserDTO"
+	SetBlockUserDtoKey  = "blockUserDTO"
+)
+
 func CreateUserMidd(c *gin.Context) {
 	var dto user_dto.CreateUserDto
 
@@ -29,7 +35,7 @@ func CreateUserMidd(c *gin.Context) {
 		UsrName: dto.UsrName,
 	}
 
-	c.Set("createUserDTO", userDTO)
+	c.Set(SetCreateUserDtoKey, userDTO)
 
 	c.Next()
 }
@@ -54,7 +60,25 @@ func GetTokenMidd(c *gin.Context) {
 		UsrName: dto.UsrName,
 	}
 
-	c.Set("tokenDTO", tokenDTO)
+	c.Set(SetTokenDtoKey, tokenDTO)
 
+	c.Next()
+}
+
+func BlockUserMiddleware(c *gin.Context) {
+	var dto user_dto.BlockUserReq
+	if err := c.ShouldBindJSON(&dto); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON"})
+		c.Abort()
+		return
+	}
+
+	if err := validation.Validate.Struct(dto); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "validation failed"})
+		c.Abort()
+		return
+	}
+
+	c.Set(SetBlockUserDtoKey, dto)
 	c.Next()
 }

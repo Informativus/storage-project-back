@@ -54,7 +54,7 @@ func BuildInsertQuery(table string, cols []string, placeholders []string) string
 	)
 }
 
-func SelectArgs[T any](model T) (cols []string, err error) {
+func GetStructCols[T any](model T) (cols []string, err error) {
 	typ := reflect.TypeOf(model)
 
 	if typ.Kind() == reflect.Ptr {
@@ -87,7 +87,6 @@ func BuildSelectQuery(table string, cols []string, whereExpression *string) stri
 			strings.Join(cols, ", "),
 			table,
 		)
-		log.Debug().Msg(query)
 		return query
 	}
 
@@ -96,31 +95,31 @@ func BuildSelectQuery(table string, cols []string, whereExpression *string) stri
 		table,
 		*whereExpression,
 	)
-	log.Debug().Msg(query)
 	return query
 }
 
-func BuildSelectJoinQuery(table string, cols []string, joinExpression string, whereExpression *string) string {
-	if whereExpression == nil {
-		return fmt.Sprintf("SELECT %s FROM %s JOIN %s",
-			strings.Join(cols, ", "),
-			table,
-			joinExpression,
-		)
-	}
-
-	return fmt.Sprintf("SELECT %s FROM %s JOIN %s WHERE %s",
-		strings.Join(cols, ", "),
+func BuildUpdateQueryReturn(table string, setClauses []string, whereExpression string, returning []string) string {
+	return fmt.Sprintf(
+		"UPDATE %s SET %s WHERE %s RETURNING %s",
 		table,
-		joinExpression,
-		*whereExpression,
+		strings.Join(setClauses, ", "),
+		whereExpression,
+		strings.Join(returning, ", "),
 	)
+}
+
+func BuildUpdateQuery(table string, fildsToUpdate []string, whereExpression string) string {
+	return fmt.Sprintf("UPDATE %s SET %s WHERE %s", table, strings.Join(fildsToUpdate, ", "), whereExpression)
 }
 
 func BuildDeleteQuery(table string, whereExpression string) string {
 	return fmt.Sprintf("DELETE FROM %s WHERE %s", table, whereExpression)
 }
 
-func BuildUpdateQuery(table string, fildsToUpdate string, whereExpression string) string {
-	return fmt.Sprintf("UPDATE %s SET %s WHERE %s", table, fildsToUpdate, whereExpression)
+func BuildSetClauses(fildsToUpdate []string) []string {
+	var setClauses []string
+	for _, fild := range fildsToUpdate {
+		setClauses = append(setClauses, fmt.Sprintf("%s = $%d", fild, len(setClauses)+1))
+	}
+	return setClauses
 }

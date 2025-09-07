@@ -2,6 +2,7 @@ package db_user
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -75,20 +76,8 @@ func (ur *SqlUserRepo) InsertUserToken(user user_model.UserTokensModel) (user_mo
 	return inserted, nil
 }
 
-func (ur *SqlUserRepo) DelUser(id uuid.UUID) (int64, error) {
-	query := sql_builder.BuildDeleteQuery(user_model.TableName, "id = $1")
-
-	tag, err := ur.db.Exec(context.Background(), query, id)
-
-	if err != nil {
-		return 0, err
-	}
-
-	return tag.RowsAffected(), nil
-}
-
 func (ur *SqlUserRepo) GetUserById(id uuid.UUID) (*user_model.UserModel, error) {
-	cols, err := sql_builder.SelectArgs(user_model.UserModel{})
+	cols, err := sql_builder.GetStructCols(user_model.UserModel{})
 
 	if err != nil {
 		return nil, err
@@ -120,7 +109,7 @@ func (ur *SqlUserRepo) GetUserById(id uuid.UUID) (*user_model.UserModel, error) 
 }
 
 func (ur *SqlUserRepo) GetUserByName(name string) (*user_model.UserModel, error) {
-	cols, err := sql_builder.SelectArgs(user_model.UserModel{})
+	cols, err := sql_builder.GetStructCols(user_model.UserModel{})
 
 	if err != nil {
 		return nil, err
@@ -152,7 +141,7 @@ func (ur *SqlUserRepo) GetUserByName(name string) (*user_model.UserModel, error)
 }
 
 func (ur *SqlUserRepo) GetUserAccessByToken(token string) (*user_model.UserTokensModel, error) {
-	cols, err := sql_builder.SelectArgs(user_model.UserTokensModel{})
+	cols, err := sql_builder.GetStructCols(user_model.UserTokensModel{})
 
 	if err != nil {
 		return nil, err
@@ -181,6 +170,31 @@ func (ur *SqlUserRepo) GetUserAccessByToken(token string) (*user_model.UserToken
 	return &selected, nil
 }
 
+func (ur *SqlUserRepo) UpdateBlockUserInf(blocked bool, id uuid.UUID) (*user_model.UserModel, error) {
+	cols, err := sql_builder.GetStructCols(user_model.UserModel{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	setClauses := sql_builder.BuildSetClauses([]string{"blocked"})
+
+	query := sql_builder.BuildUpdateQueryReturn(user_model.TableName, setClauses, fmt.Sprintf("id = $%d", len(setClauses)+1), cols)
+
+	var updated user_model.UserModel
+
+	err = ur.db.QueryRow(context.Background(), query, blocked, id).Scan(
+		&updated.ID,
+		&updated.Name,
+		&updated.Blocked,
+		&updated.RoleID,
+		&updated.CreatedAt,
+		&updated.UpdatedAt,
+	)
+
+	return &updated, err
+}
+
 func (ur *SqlUserRepo) DelExpiredTokens() (int64, error) {
 	query := sql_builder.BuildDeleteQuery(user_model.TokenTableName, "expires_at < $1")
 
@@ -188,6 +202,18 @@ func (ur *SqlUserRepo) DelExpiredTokens() (int64, error) {
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to delete expired tokens")
+		return 0, err
+	}
+
+	return tag.RowsAffected(), nil
+}
+
+func (ur *SqlUserRepo) DelUser(id uuid.UUID) (int64, error) {
+	query := sql_builder.BuildDeleteQuery(user_model.TableName, "id = $1")
+
+	tag, err := ur.db.Exec(context.Background(), query, id)
+
+	if err != nil {
 		return 0, err
 	}
 

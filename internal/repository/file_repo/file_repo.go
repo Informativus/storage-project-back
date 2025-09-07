@@ -52,7 +52,7 @@ func (f *FileRepo) UploadFile(fileModel *file_model.FileModel) (*file_model.File
 }
 
 func (f *FileRepo) GetFileByID(id uuid.UUID) (*file_model.FileModel, error) {
-	cals, err := sql_builder.SelectArgs(file_model.FileModel{})
+	cals, err := sql_builder.GetStructCols(file_model.FileModel{})
 
 	if err != nil {
 		return nil, err
@@ -99,7 +99,7 @@ func (f *FileRepo) HardDelFile(id uuid.UUID) (int64, error) {
 }
 
 func (f *FileRepo) MarkFileAsDeleted(id uuid.UUID, deletedAt time.Time) (int64, error) {
-	filds := "deleted_at = $1"
+	filds := []string{"deleted_at = $1"}
 
 	where := "id = $2"
 
@@ -116,7 +116,7 @@ func (f *FileRepo) MarkFileAsDeleted(id uuid.UUID, deletedAt time.Time) (int64, 
 }
 
 func (f *FileRepo) GetMarkedToDelFiles() ([]file_model.FileModel, error) {
-	cals, err := sql_builder.SelectArgs(file_model.FileModel{})
+	cals, err := sql_builder.GetStructCols(file_model.FileModel{})
 
 	if err != nil {
 		return nil, err

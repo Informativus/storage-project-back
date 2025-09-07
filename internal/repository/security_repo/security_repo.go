@@ -21,7 +21,7 @@ func NewSecurityRepo(db *database.DatabaseModule) *SecurityRepo {
 }
 
 func (s *SecurityRepo) GetUsrRoleForFolder(usrID uuid.UUID, fldID uuid.UUID) (*folder_model.FolderAccessModel, error) {
-	col, err := sql_builder.SelectArgs(folder_model.FolderAccessModel{})
+	col, err := sql_builder.GetStructCols(folder_model.FolderAccessModel{})
 
 	if err != nil {
 		return nil, err
