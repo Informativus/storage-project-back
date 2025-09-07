@@ -2,19 +2,17 @@ package guard
 
 import (
 	"net/http"
-	"slices"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ivan/storage-project-back/internal/models/roles_model"
 	"github.com/ivan/storage-project-back/internal/repository/user_repo"
 	"github.com/ivan/storage-project-back/pkg/jwt_service"
 	"github.com/rs/zerolog/log"
 )
 
-const SetUsrDtoKey = "usrDTO"
+const SetJwtDtoKey = "jwtDTO"
 
-func AuthGuard(jwt *jwt_service.JwtService, usrRepo *user_repo.UserRepo, accessRoles []roles_model.Role) gin.HandlerFunc {
+func JwtGuard(jwt *jwt_service.JwtService, usrRepo user_repo.IUserRepo) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 
@@ -44,37 +42,7 @@ func AuthGuard(jwt *jwt_service.JwtService, usrRepo *user_repo.UserRepo, accessR
 			return
 		}
 
-		usr, err := usrRepo.GetUserById(jwtPayload.ID)
-
-		if err != nil || usr == nil {
-			log.Error().Err(err).Msg("failed to get user")
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid data"})
-			c.Abort()
-			return
-		}
-
-		if !slices.Contains(accessRoles, usr.RoleID) || usr.Blocked {
-			c.JSON(http.StatusForbidden, gin.H{"error": "unauthorized"})
-			c.Abort()
-			return
-		}
-
-		usrAccess, err := usrRepo.GetUserAccessByToken(token)
-
-		if err != nil || usrAccess == nil {
-			log.Error().Err(err).Msg("failed to get user access")
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid data"})
-			c.Abort()
-			return
-		}
-
-		if usrAccess.Revoked {
-			c.JSON(http.StatusForbidden, gin.H{"error": "unauthorized"})
-			c.Abort()
-			return
-		}
-
-		c.Set(SetUsrDtoKey, usr)
+		c.Set(SetJwtDtoKey, jwtPayload)
 
 		c.Next()
 	}

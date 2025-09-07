@@ -47,3 +47,18 @@ CREATE TABLE folder_access (
 );
 
 CREATE VIEW MAIN_USER_FOLDER AS SELECT FA.USER_ID, F.ID AS FOLDER_ID, F.NAME FROM FOLDERS F JOIN FOLDER_ACCESS FA ON F.ID = FA.FOLDER_ID WHERE F.MAIN_FOLDER_ID IS NULL;
+
+CREATE TABLE protection_groups (
+    id UUID PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT
+);
+
+CREATE TABLE folder_protection_groups (
+    folder_id UUID NOT NULL REFERENCES folders(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    protection_group_id UUID NOT NULL REFERENCES protection_groups(id) ON DELETE CASCADE,
+    PRIMARY KEY (folder_id, user_id, protection_group_id)
+);
+
+

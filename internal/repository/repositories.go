@@ -4,8 +4,8 @@ import (
 	"github.com/ivan/storage-project-back/internal/repository/file_repo"
 	"github.com/ivan/storage-project-back/internal/repository/folder_repo"
 	"github.com/ivan/storage-project-back/internal/repository/security_repo"
-	user_repo "github.com/ivan/storage-project-back/internal/repository/user_repo"
-	"github.com/ivan/storage-project-back/pkg/database/database"
+	"github.com/ivan/storage-project-back/internal/repository/user_repo"
+	"github.com/ivan/storage-project-back/pkg/database"
 )
 
 type Repositories struct {
@@ -15,9 +15,11 @@ type Repositories struct {
 	FileRepo *file_repo.FileRepo
 }
 
-func NewRepositories(db database.DBClient) *Repositories {
+func NewRepositories(db *database.DatabaseModule) *Repositories {
+	usrModule := user_repo.NewUserModule(db)
+
 	return &Repositories{
-		UserRepo: user_repo.NewUserRepo(db),
+		UserRepo: usrModule.UserRepo,
 		FldRepo:  folder_repo.NewFldRepo(db),
 		SecRepo:  security_repo.NewSecurityRepo(db),
 		FileRepo: file_repo.NewFileRepo(db),

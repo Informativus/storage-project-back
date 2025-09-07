@@ -7,7 +7,7 @@ import (
 	"github.com/ivan/storage-project-back/internal/repository"
 	"github.com/ivan/storage-project-back/internal/services"
 	"github.com/ivan/storage-project-back/pkg/config"
-	"github.com/ivan/storage-project-back/pkg/database/database"
+	"github.com/ivan/storage-project-back/pkg/database"
 	"github.com/ivan/storage-project-back/pkg/jobs"
 	"github.com/ivan/storage-project-back/pkg/jwt_service"
 	"github.com/rs/zerolog/log"
@@ -21,7 +21,7 @@ type Registry struct {
 }
 
 func NewRegistry(cfg *config.Config, routers *gin.Engine) *Registry {
-	conn, err := database.ConnectPg(cfg)
+	conn, err := database.NewDatabaseModule(cfg)
 	routers.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	if err != nil {

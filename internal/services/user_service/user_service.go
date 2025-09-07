@@ -61,13 +61,13 @@ func (u *UserService) CreateUser(usrName string) (string, error) {
 		return "", errsvc.UsrErr.Internal.New(err)
 	}
 
-	token, err := u.addUserToken(&usrModel)
+	token, err := u.addUserToken(usrModel)
 
 	if err != nil {
 		return "", u.rollbackUser(usrModel.ID, "failed to create user access token", err)
 	}
 
-	err = u.FolderService.CreateFolder(usrName, &usrModel)
+	err = u.FolderService.CreateFolder(usrName, usrModel)
 
 	if err != nil {
 		return "", u.rollbackUser(usrModel.ID, "failed to create user folder", err)

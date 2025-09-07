@@ -20,11 +20,11 @@ type Controllers struct {
 	FileController *file_controller.FileController
 	FldController  *fld_controller.FldController
 	UserController *user_controller.UserController
-	UserRepo       *user_repo.UserRepo
+	UserRepo       user_repo.IUserRepo
 	jwt            *jwt_service.JwtService
 }
 
-func NewControllers(services *services.Services, jwt *jwt_service.JwtService, userRepo *user_repo.UserRepo) *Controllers {
+func NewControllers(services *services.Services, jwt *jwt_service.JwtService, userRepo user_repo.IUserRepo) *Controllers {
 	return &Controllers{
 		FileController: file_controller.NewFileController(services),
 		FldController:  fld_controller.NewFldController(services),
@@ -41,21 +41,21 @@ func (c *Controllers) RegisterRoutes(router *gin.Engine) {
 	{
 		user := api.Group("/user")
 		{
-			user.POST("/create", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.Admin}), users_middleware.CreateUserMidd, c.UserController.CreateUser)
-			user.DELETE("/delete", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.Admin}), c.UserController.DltUser)
-			user.POST("/get_token", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.Admin}), users_middleware.GetTokenMidd, c.UserController.GenToken)
+			user.POST("/create", guard.JwtGuard(c.jwt, c.UserRepo), guard.UsrGuard(c.UserRepo, []roles_model.Role{roles_model.Admin}), users_middleware.CreateUserMidd, c.UserController.CreateUser)
+			user.DELETE("/delete", guard.JwtGuard(c.jwt, c.UserRepo), guard.UsrGuard(c.UserRepo, []roles_model.Role{roles_model.Admin}), c.UserController.DltUser)
+			user.POST("/get_token", guard.JwtGuard(c.jwt, c.UserRepo), guard.UsrGuard(c.UserRepo, []roles_model.Role{roles_model.Admin}), users_middleware.GetTokenMidd, c.UserController.GenToken)
 		}
 
 		fld := api.Group("/fld")
 		{
-			fld.POST("/create", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.User}), fld_middleware.CreateFld, c.FldController.CreateFld)
-			fld.DELETE("/delete/:fldID", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.User}), fld_middleware.DelFld, c.FldController.DelFld)
+			fld.POST("/create", guard.JwtGuard(c.jwt, c.UserRepo), guard.UsrGuard(c.UserRepo, []roles_model.Role{roles_model.User}), fld_middleware.CreateFld, c.FldController.CreateFld)
+			fld.DELETE("/delete/:fldID", guard.JwtGuard(c.jwt, c.UserRepo), guard.UsrGuard(c.UserRepo, []roles_model.Role{roles_model.User}), fld_middleware.DelFld, c.FldController.DelFld)
 		}
 
 		file := api.Group("/file")
 		{
-			file.POST("/upload", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.User}), file_middleware.UploadFileMidd, c.FileController.Upload)
-			file.DELETE("/delete/:fileID", guard.AuthGuard(c.jwt, c.UserRepo, []roles_model.Role{roles_model.User}), file_middleware.DelFileMidd, c.FileController.Del)
+			file.POST("/upload", guard.JwtGuard(c.jwt, c.UserRepo), guard.UsrGuard(c.UserRepo, []roles_model.Role{roles_model.User}), file_middleware.UploadFileMidd, c.FileController.Upload)
+			file.DELETE("/delete/:fileID", guard.JwtGuard(c.jwt, c.UserRepo), guard.UsrGuard(c.UserRepo, []roles_model.Role{roles_model.User}), file_middleware.DelFileMidd, c.FileController.Del)
 		}
 	}
 }

@@ -7,17 +7,18 @@ import (
 	"github.com/google/uuid"
 	"github.com/ivan/storage-project-back/internal/models/file_model"
 	"github.com/ivan/storage-project-back/internal/utils/sql_builder"
-	"github.com/ivan/storage-project-back/pkg/database/database"
+	"github.com/ivan/storage-project-back/pkg/database"
+	"github.com/ivan/storage-project-back/pkg/database/sql_database"
 	"github.com/rs/zerolog/log"
 )
 
 type FileRepo struct {
-	db database.DBClient
+	db sql_database.DBClient
 }
 
-func NewFileRepo(db database.DBClient) *FileRepo {
+func NewFileRepo(db *database.DatabaseModule) *FileRepo {
 	return &FileRepo{
-		db: db,
+		db: db.SQLDB,
 	}
 }
 

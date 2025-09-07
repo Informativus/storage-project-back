@@ -11,7 +11,8 @@ import (
 )
 
 type JwtPayload struct {
-	ID uuid.UUID
+	ID    uuid.UUID
+	Token string
 }
 
 type JwtService struct {
@@ -95,5 +96,5 @@ func (s *JwtService) ParseToken(tokenString string) (*JwtPayload, error) {
 		return nil, fmt.Errorf("internal server error")
 	}
 
-	return &JwtPayload{ID: id}, nil
+	return &JwtPayload{ID: id, Token: tokenString}, nil
 }

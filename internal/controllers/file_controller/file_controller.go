@@ -59,10 +59,10 @@ func (f *FileController) Upload(c *gin.Context) {
 // @Success 204 "No Content"
 // @Router /file/delete/{fileID} [delete]
 func (f *FileController) Del(c *gin.Context) {
-	// usrDto := c.MustGet(guard.SetUsrDtoKey).(*user_model.UserModel)
+	usrModel := c.MustGet(guard.SetUsrDtoKey).(*user_model.UserModel)
 	delFileDto := c.MustGet(file_middleware.SetDelFileKey).(*file_dto.DelFileDto)
 
-	err := f.FileService.DelFile(delFileDto.FileID)
+	err := f.FileService.DelFile(usrModel, delFileDto.FileID)
 
 	if err != nil {
 		c.Error(err)

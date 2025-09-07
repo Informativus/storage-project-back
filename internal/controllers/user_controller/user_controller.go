@@ -86,3 +86,7 @@ func (uc *UserController) GenToken(c *gin.Context) {
 		"token": token,
 	})
 }
+
+func Login(c *gin.Context) {
+
+}

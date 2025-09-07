@@ -4,6 +4,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
@@ -20,6 +21,10 @@ type Config struct {
 	SecretKey        string
 	ExpiresIn        int64
 	GpgPublicKeyPath string
+	RedisHost        string
+	RedisPort        string
+	RedisPassword    string
+	CacheLifetime    time.Duration
 }
 
 func NewConfig() (*Config, error) {
@@ -38,6 +43,10 @@ func NewConfig() (*Config, error) {
 		SecretKey:        getStrFromEnv("SECRET_KEY", true),
 		ExpiresIn:        getTimeFromEnv("EXPIRESIN", true, "seconds"),
 		GpgPublicKeyPath: getStrFromEnv("GPG_PUBLIC_KEY_PATH", true),
+		RedisHost:        getStrFromEnv("REDIS_HOST", true),
+		RedisPort:        getStrFromEnv("REDIS_PORT", true),
+		RedisPassword:    getStrFromEnv("REDIS_PASSWORD", false),
+		CacheLifetime:    time.Duration(getTimeFromEnv("CACHE_LIFETIME", true, "seconds")) * time.Second,
 	}
 
 	return cfg, nil

@@ -6,16 +6,17 @@ import (
 	"github.com/google/uuid"
 	"github.com/ivan/storage-project-back/internal/models/folder_model"
 	"github.com/ivan/storage-project-back/internal/utils/sql_builder"
-	"github.com/ivan/storage-project-back/pkg/database/database"
+	"github.com/ivan/storage-project-back/pkg/database"
+	"github.com/ivan/storage-project-back/pkg/database/sql_database"
 )
 
 type SecurityRepo struct {
-	db database.DBClient
+	db sql_database.DBClient
 }
 
-func NewSecurityRepo(db database.DBClient) *SecurityRepo {
+func NewSecurityRepo(db *database.DatabaseModule) *SecurityRepo {
 	return &SecurityRepo{
-		db: db,
+		db: db.SQLDB,
 	}
 }
 

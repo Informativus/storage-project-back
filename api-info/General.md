@@ -51,7 +51,7 @@
 
 ## ⚙️ Используемые технологии
 
-- **Backend**: Golang, PostgreSQL, JWT, HTTPS
+- **Backend**: Golang, PostgreSQL, JWT, HTTPS, Redis 
     
 - **Frontend**: мобильное приложение-галерея (планируется Android/iOS)
     

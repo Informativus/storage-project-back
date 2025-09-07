@@ -111,7 +111,7 @@ func (f *FileService) UploadFileToFld(usrModel *user_model.UserModel, uploadFile
 	return &fileModel.ID, nil
 }
 
-func (f *FileService) DelFile(fileID uuid.UUID) error {
+func (f *FileService) DelFile(usrModel *user_model.UserModel, fileID uuid.UUID) error {
 	// TODO: Добавить проверку на права удаления
 	fileModel, err := f.FileRepo.GetFileByID(fileID)
 
