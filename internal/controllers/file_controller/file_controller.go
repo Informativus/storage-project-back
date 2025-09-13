@@ -28,7 +28,6 @@ func NewFileController(services *services.Services) *FileController {
 // @Param file formData file true "File to upload"
 // @Param name formData string true "Name of the file"
 // @Param folderID formData string true "Folder UUID"
-// @Param publicKey formData file true "Public key for encryption" example(public.key)
 // @Security BearerAuth
 // @Success 200 {object} file_dto.UploadFileDtoRes "Successful response"
 // @Router /file/upload [post]

@@ -18,7 +18,7 @@ type IFldRepo interface {
 	GetGeneralFolderByUsrId(id uuid.UUID) (*folder_model.MainFolderModel, error)
 	GetGeneralFolderBySubFldId(id uuid.UUID) (*folder_model.FolderModel, error)
 	GetFldByNameAndMainFldId(fldName string, mainID uuid.UUID) (*folder_model.FolderModel, error)
-	GetFldById(fldId uuid.UUID) (*folder_model.FolderModel, error)
+
 	GetFldByIdAndMainFldId(fldID uuid.UUID, mainID uuid.UUID) (*folder_model.FolderModel, error)
 	DelFld(id uuid.UUID) error
 }
@@ -59,30 +59,6 @@ func (f *FldRepo) CreateFld(fldModel *folder_model.FolderModel) (*folder_model.F
 	}
 
 	return &inserted, nil
-}
-
-func (f *FldRepo) InsertFolderAccess(fldAccessModel folder_model.FolderAccessModel) (folder_model.FolderAccessModel, error) {
-	cals, vals, phs, err := sql_builder.InsertArgs(fldAccessModel)
-
-	if err != nil {
-		return folder_model.FolderAccessModel{}, err
-	}
-
-	query := sql_builder.BuildInsertQuery(folder_model.AccessTableName, cals, phs)
-
-	var inserted folder_model.FolderAccessModel
-
-	err = f.db.QueryRow(context.Background(), query, vals...).Scan(
-		&inserted.FolderID,
-		&inserted.UserID,
-		&inserted.RoleID,
-	)
-
-	if err != nil {
-		return folder_model.FolderAccessModel{}, err
-	}
-
-	return inserted, nil
 }
 
 func (f *FldRepo) GetGeneralFolderByName(fldName string) (*folder_model.MainFolderModel, error) {

@@ -33,7 +33,7 @@ func NewFldController(services *services.Services) *FldController {
 // @Router /fld/delete/{fldID} [delete]
 func (fc *FldController) DelFld(c *gin.Context) {
 	dto := c.MustGet(fld_middleware.SetDelFldDtoKey).(fld_dto.DelFld)
-	usrDto := c.MustGet(guard.SetUsrDtoKey).(*user_model.UserModel)
+	usrDto := c.MustGet(guard.SetUsrDtoKey).(*user_model.UserDto)
 
 	err := fc.fldService.DelFld(dto.FldID, usrDto.ID)
 
@@ -50,13 +50,14 @@ func (fc *FldController) DelFld(c *gin.Context) {
 // @Tags Folders
 // @Accept json
 // @Produce json
-// @Param folder body fld_dto.CreateFldReq true "Fld info"
+// @Param folder body fld_dto.CreateFldBody true "Fld info"
+// @Param fldID path string true "Folder id to create subfolder"
 // @Security BearerAuth
 // @Success 200 {object} fld_dto.CreateFldRes "Successful response"
-// @Router /fld/create [post]
+// @Router /fld/{fldID}/create [post]
 func (fc *FldController) CreateFld(c *gin.Context) {
-	dto := c.MustGet(fld_middleware.SetCreateFldDtoKey).(fld_dto.CreateFldReq)
-	usrDto := c.MustGet(guard.SetUsrDtoKey).(*user_model.UserModel)
+	dto := c.MustGet(fld_middleware.SetCreateFldDtoKey).(fld_dto.CreateFldDto)
+	usrDto := c.MustGet(guard.SetUsrDtoKey).(*user_model.UserDto)
 
 	fldID, err := fc.fldService.CreateSubFld(dto.Name, dto.ParentID, usrDto)
 

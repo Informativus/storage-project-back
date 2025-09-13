@@ -41,6 +41,7 @@ func (ur *SqlUserRepo) CreateUser(user user_model.UserModel) (*user_model.UserMo
 		&inserted.RoleID,
 		&inserted.CreatedAt,
 		&inserted.UpdatedAt,
+		&inserted.DeletedAt,
 	)
 	if err != nil {
 		return nil, err
@@ -96,6 +97,7 @@ func (ur *SqlUserRepo) GetUserById(id uuid.UUID) (*user_model.UserModel, error) 
 		&selected.RoleID,
 		&selected.CreatedAt,
 		&selected.UpdatedAt,
+		&selected.DeletedAt,
 	)
 
 	if err != nil && ur.db.IsErrNoRows(err) {
@@ -105,7 +107,6 @@ func (ur *SqlUserRepo) GetUserById(id uuid.UUID) (*user_model.UserModel, error) 
 	}
 
 	return &selected, nil
-
 }
 
 func (ur *SqlUserRepo) GetUserByName(name string) (*user_model.UserModel, error) {
@@ -128,6 +129,7 @@ func (ur *SqlUserRepo) GetUserByName(name string) (*user_model.UserModel, error)
 		&selected.RoleID,
 		&selected.CreatedAt,
 		&selected.UpdatedAt,
+		&selected.DeletedAt,
 	)
 
 	if err != nil && ur.db.IsErrNoRows(err) {
@@ -190,6 +192,7 @@ func (ur *SqlUserRepo) UpdateBlockUserInf(blocked bool, id uuid.UUID) (*user_mod
 		&updated.RoleID,
 		&updated.CreatedAt,
 		&updated.UpdatedAt,
+		&updated.DeletedAt,
 	)
 
 	return &updated, err
@@ -208,6 +211,22 @@ func (ur *SqlUserRepo) DelExpiredTokens() (int64, error) {
 	return tag.RowsAffected(), nil
 }
 
+func (ur *SqlUserRepo) MarkUsrAsDeleted(deletedAt time.Time, id uuid.UUID) (int64, error) {
+	filds := []string{"deleted_at = $1"}
+
+	where := "id = $2"
+
+	query := sql_builder.BuildUpdateQuery(user_model.TableName, filds, where)
+
+	tags, err := ur.db.Exec(context.Background(), query, deletedAt, id)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return tags.RowsAffected(), nil
+}
+
 func (ur *SqlUserRepo) DelUser(id uuid.UUID) (int64, error) {
 	query := sql_builder.BuildDeleteQuery(user_model.TableName, "id = $1")
 
@@ -218,4 +237,50 @@ func (ur *SqlUserRepo) DelUser(id uuid.UUID) (int64, error) {
 	}
 
 	return tag.RowsAffected(), nil
+}
+
+func (ur *SqlUserRepo) GetMarkedToDelUsrs() ([]user_model.UserModel, error) {
+	cols, err := sql_builder.GetStructCols(user_model.UserModel{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	where := "deleted_at IS NOT NULL"
+
+	query := sql_builder.BuildSelectQuery(user_model.TableName, cols, &where)
+
+	rows, err := ur.db.Query(context.Background(), query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var selected []user_model.UserModel
+	for rows.Next() {
+		var usr user_model.UserModel
+		err = rows.Scan(
+			&usr.ID,
+			&usr.Name,
+			&usr.Blocked,
+			&usr.RoleID,
+			&usr.CreatedAt,
+			&usr.UpdatedAt,
+			&usr.DeletedAt,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		selected = append(selected, usr)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return selected, nil
 }

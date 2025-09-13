@@ -6,7 +6,8 @@ create table users (
     blocked boolean default false,
     role_id smallint not null references roles(id) on delete cascade,
     created_at timestamp default now(),
-    updated_at timestamp default now()
+    updated_at timestamp default now(),
+    deleted_at timestamp default now()
 );
 
 CREATE TABLE user_tokens (
@@ -42,7 +43,6 @@ CREATE TABLE files (
 CREATE TABLE folder_access (
     folder_id UUID NOT NULL REFERENCES folders(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    role_id SMALLINT NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
     PRIMARY KEY (folder_id, user_id)
 );
 
@@ -61,4 +61,15 @@ CREATE TABLE folder_protection_groups (
     PRIMARY KEY (folder_id, user_id, protection_group_id)
 );
 
+CREATE TABLE actions (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(32) NOT NULL UNIQUE,
+    note VARCHAR(255)
+);
+
+CREATE TABLE protection_group_actions (
+    group_id UUID NOT NULL REFERENCES protection_groups(id) ON DELETE CASCADE,
+    action_id INT NOT NULL REFERENCES actions(id) ON DELETE CASCADE,
+    PRIMARY KEY (group_id, action_id)
+);
 

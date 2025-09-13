@@ -6,18 +6,18 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/ivan/storage-project-back/internal/models/roles_model"
-	"github.com/ivan/storage-project-back/internal/repository/user_repo"
+	"github.com/ivan/storage-project-back/internal/services/user_service"
 	"github.com/ivan/storage-project-back/pkg/jwt_service"
 	"github.com/rs/zerolog/log"
 )
 
 const SetUsrDtoKey = "usrDTO"
 
-func UsrGuard(usrRepo user_repo.IUserRepo, accessRoles []roles_model.Role) gin.HandlerFunc {
+func UsrGuard(usrService *user_service.UserService, accessRoles []roles_model.Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		jwtPayload := c.MustGet(SetJwtDtoKey).(*jwt_service.JwtPayload)
 
-		usr, err := usrRepo.GetUserById(jwtPayload.ID)
+		usr, err := usrService.Me(jwtPayload.ID)
 
 		if err != nil || usr == nil {
 			log.Error().Err(err).Msg("failed to get user")
@@ -26,13 +26,13 @@ func UsrGuard(usrRepo user_repo.IUserRepo, accessRoles []roles_model.Role) gin.H
 			return
 		}
 
-		if !slices.Contains(accessRoles, usr.RoleID) || usr.Blocked {
+		if !slices.Contains(accessRoles, usr.RoleID) || usr.Blocked || usr.DeletedAt != nil {
 			c.JSON(http.StatusForbidden, gin.H{"error": "unauthorized"})
 			c.Abort()
 			return
 		}
 
-		tokenModel, err := usrRepo.GetUserAccessByToken(jwtPayload.Token)
+		tokenModel, err := usrService.GetUserAccessByToken(jwtPayload.Token)
 
 		if err != nil || tokenModel == nil || tokenModel.Revoked {
 			log.Error().Err(err).Msg("invalid token")

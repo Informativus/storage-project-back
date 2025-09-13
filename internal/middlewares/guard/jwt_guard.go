@@ -5,14 +5,13 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ivan/storage-project-back/internal/repository/user_repo"
 	"github.com/ivan/storage-project-back/pkg/jwt_service"
 	"github.com/rs/zerolog/log"
 )
 
 const SetJwtDtoKey = "jwtDTO"
 
-func JwtGuard(jwt *jwt_service.JwtService, usrRepo user_repo.IUserRepo) gin.HandlerFunc {
+func JwtGuard(jwt *jwt_service.JwtService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 

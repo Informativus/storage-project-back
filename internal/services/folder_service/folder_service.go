@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/ivan/storage-project-back/internal/models/folder_model"
+	"github.com/ivan/storage-project-back/internal/models/protection_group"
 	"github.com/ivan/storage-project-back/internal/models/user_model"
 	"github.com/ivan/storage-project-back/internal/repository/folder_repo"
 	"github.com/ivan/storage-project-back/internal/services/security_service"
@@ -108,11 +109,10 @@ func (f *FolderService) CreateFolder(fldName string, usrModel *user_model.UserMo
 		return errsvc.FldErr.CreateFailed.New(err)
 	}
 
-	_, err = f.FldRepo.InsertFolderAccess(folder_model.FolderAccessModel{
+	err = f.Security.AssignFolderGroups(&folder_model.FolderAccessModel{
 		FolderID: fldModel.ID,
 		UserID:   usrID,
-		RoleID:   f.Security.GetUsrRoleForFld(usrModel, fldModel),
-	})
+	}, []protection_group.ProtectionGroupsType{protection_group.Owner})
 
 	if err != nil {
 		os.RemoveAll(fullPath)
@@ -152,8 +152,8 @@ func (f *FolderService) DelFld(fldID uuid.UUID, usrID uuid.UUID) error {
 	return nil
 }
 
-func (f *FolderService) CreateSubFld(fldName string, parentID uuid.UUID, usrModel *user_model.UserModel) (*uuid.UUID, error) {
-	err := f.Security.AccessToCreateFldForUsr(usrModel, parentID)
+func (f *FolderService) CreateSubFld(fldName string, parentID uuid.UUID, usrDto *user_model.UserDto) (*uuid.UUID, error) {
+	err := f.Security.AccessToCreateFldForUsr(usrDto, parentID)
 
 	if err != nil {
 		return nil, err
@@ -191,7 +191,7 @@ func (f *FolderService) CreateSubFld(fldName string, parentID uuid.UUID, usrMode
 		ID:        uuid.New(),
 		Name:      fldName,
 		ParentID:  &parentID,
-		OwnerID:   usrModel.ID,
+		OwnerID:   usrDto.ID,
 		MainFldId: &mainFldModel.ID,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -203,11 +203,10 @@ func (f *FolderService) CreateSubFld(fldName string, parentID uuid.UUID, usrMode
 		return nil, errsvc.FldErr.CreateFailed.New(err)
 	}
 
-	_, err = f.FldRepo.InsertFolderAccess(folder_model.FolderAccessModel{
+	err = f.Security.AssignFolderGroups(&folder_model.FolderAccessModel{
 		FolderID: fldModel.ID,
-		UserID:   usrModel.ID,
-		RoleID:   f.Security.GetUsrRoleForFld(usrModel, mainFldModel),
-	})
+		UserID:   usrDto.ID,
+	}, []protection_group.ProtectionGroupsType{protection_group.Editor})
 
 	if err != nil {
 		return nil, f.rollbackFolder(fldModel.ID, fldModel.ID, "failed to insert folder access", err)

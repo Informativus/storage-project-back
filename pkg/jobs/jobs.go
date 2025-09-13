@@ -25,6 +25,7 @@ func NewStartJobs(repo *repository.Repositories, cfg *config.Config) *StartJobs 
 func (j *StartJobs) StartAllJobs() {
 	j.StartTokenCleanupJob()
 	j.StartFileCleanUpJob()
+	j.StartCleanUpUsrs()
 }
 
 func (j *StartJobs) StartTokenCleanupJob() {
@@ -74,6 +75,29 @@ func (j *StartJobs) StartFileCleanUpJob() {
 
 				if tag, err := j.repo.FileRepo.HardDelFile(file.ID); err != nil || tag == 0 {
 					log.Error().Err(err).Msg("failed to delete file from db")
+					continue
+				}
+			}
+		}
+	}()
+}
+
+func (j *StartJobs) StartCleanUpUsrs() {
+	ticker := time.NewTicker(time.Hour)
+
+	go func() {
+		for range ticker.C {
+			delUsrs, err := j.repo.UserRepo.GetMarkedToDelUsrs()
+
+			log.Info().Msgf("found %d users to delete", len(delUsrs))
+			if err != nil {
+				log.Error().Err(err).Msg("failed to get marked to del users")
+				continue
+			}
+
+			for _, usr := range delUsrs {
+				if tag, err := j.repo.UserRepo.HardDel(usr.ID); err != nil || tag == 0 {
+					log.Error().Err(err).Msg("failed to delete user from db")
 					continue
 				}
 			}

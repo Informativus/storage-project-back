@@ -22,14 +22,14 @@ func NewServices(
 	repos *repository.Repositories,
 	jwt *jwt_service.JwtService,
 ) *Services {
-	securityService := security_service.NewSecurityService(repos.SecRepo)
+	securityService := security_service.NewSecurityService(repos.SecRepo, repos.FldRepo)
 	fldService := folder_service.NewFldService(cfg, repos.FldRepo, securityService)
 	fileService := file_service.NewFileService(cfg, securityService, fldService, repos.FileRepo)
 
 	return &Services{
 		FileService:     fileService,
 		FolderService:   fldService,
-		UserService:     userservice.NewUserService(cfg, jwt, repos.UserRepo, fldService),
+		UserService:     userservice.NewUserService(cfg, jwt, repos.UserRepo, fldService, securityService),
 		SecurityService: securityService,
 	}
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/ivan/storage-project-back/internal/services"
 	"github.com/ivan/storage-project-back/internal/services/user_service"
 	"github.com/ivan/storage-project-back/pkg/jwt_service"
+	"github.com/rs/zerolog/log"
 )
 
 type UserController struct {
@@ -54,8 +55,9 @@ func (uc *UserController) CreateUser(c *gin.Context) {
 // @Success 204 "No Content"
 // @Router /user/delete [delete]
 func (uc *UserController) DelUser(c *gin.Context) {
-	usrDTO := c.MustGet(guard.SetUsrDtoKey).(*user_model.UserModel)
-	err := uc.UserService.DelUser(usrDTO.ID)
+	log.Info().Msg("Delete user")
+	usrDTO := c.MustGet(guard.SetUsrDtoKey).(*user_model.UserDto)
+	err := uc.UserService.MarkUsrAsDeleted(usrDTO.ID)
 
 	if err != nil {
 		c.Error(err)
@@ -101,7 +103,7 @@ func (uc *UserController) GenToken(c *gin.Context) {
 func (uc *UserController) Me(c *gin.Context) {
 	jwtPayload := c.MustGet(guard.SetJwtDtoKey).(*jwt_service.JwtPayload)
 
-	err := uc.UserService.Me(jwtPayload.ID)
+	_, err := uc.UserService.Me(jwtPayload.ID)
 
 	if err != nil {
 		c.Error(err)

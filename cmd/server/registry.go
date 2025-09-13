@@ -31,7 +31,7 @@ func NewRegistry(cfg *config.Config, routers *gin.Engine) *Registry {
 	jwt := jwt_service.NewJwtService(cfg)
 	repos := repository.NewRepositories(conn)
 	services := services.NewServices(cfg, repos, jwt)
-	controllers := controllers.NewControllers(services, jwt, repos.UserRepo)
+	controllers := controllers.NewControllers(services, jwt)
 
 	jbs := jobs.NewStartJobs(repos, cfg)
 
